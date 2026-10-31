@@ -56,6 +56,8 @@ El archivo `.env` está en `.gitignore` y **nunca** se sube a GitHub. La clave d
 | `ANALYZER`       | `gemini` lee el plano con Gemini (por defecto); `fake` devuelve medidas de ejemplo sin IA |
 | `GEMINI_API_KEY` | Clave de Google AI Studio (solo con `ANALYZER=gemini`)                       |
 | `GEMINI_MODEL`   | Modelo de Gemini que lee los planos (por defecto `gemini-3.5-flash`)         |
+| `GEMINI_FALLBACK_MODEL` | Modelo de respaldo cuando el principal está saturado (por defecto `gemini-3.5-flash-lite`; vacío lo desactiva) |
+| `GEMINI_RETRIES` | Reintentos de cada modelo cuando Gemini responde que está saturado (por defecto 2) |
 | `SERVICE_TOKEN`  | Clave compartida con el backend; llega en el encabezado `X-Service-Token`    |
 | `MAX_FILE_MB`    | Tamaño máximo del plano en MB (por defecto 10)                               |
 | `PORT`           | Puerto del servidor (Render lo asigna solo)                                   |
