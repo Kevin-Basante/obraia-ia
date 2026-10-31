@@ -3,8 +3,21 @@
 import os
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 
 DEFAULT_MODEL = "gemini-3.5-flash"
+
+
+def _load_dotenv(path: Path = Path(".env")) -> None:
+    """Loads KEY=value lines into the environment, without overriding real variables."""
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip())
 
 
 @dataclass(frozen=True)
@@ -29,6 +42,7 @@ class Settings:
 
 @lru_cache
 def get_settings() -> Settings:
+    _load_dotenv()
     return Settings(
         analyzer=os.environ.get("ANALYZER", "gemini").strip().lower(),
         gemini_api_key=os.environ.get("GEMINI_API_KEY", ""),
