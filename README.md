@@ -9,6 +9,66 @@ Este servicio no tiene base de datos ni usuarios: solo lo llama el backend (`obr
 Frontend  →  Backend (Spring Boot)  →  obraia-ia (FastAPI)  →  Gemini
 ```
 
+## Tecnologías
+
+- Python 3.11 + FastAPI
+- Uvicorn como servidor
+- Google Gen AI SDK (`google-genai`) para llamar a Gemini
+- Pydantic para validar los datos
+- Pytest para las pruebas
+- Render para el despliegue
+
+## Requisitos
+
+- Python 3.11 o superior
+- Git
+- Una clave de Gemini de [Google AI Studio](https://aistudio.google.com/apikey) (opcional: sin clave se puede usar el analizador `fake`)
+
+## Instalación
+
+```bash
+git clone https://github.com/Kevin-Basante/obraia-ia.git
+cd obraia-ia
+python -m venv venv
+```
+
+Activar el entorno virtual:
+
+| Windows (PowerShell)        | Mac / Linux               |
+| --------------------------- | ------------------------- |
+| `.\venv\Scripts\Activate.ps1` | `source venv/bin/activate` |
+
+Instalar las dependencias (incluye las de pruebas):
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+## Variables de entorno
+
+1. Copia `.env.example` y renómbralo a `.env`.
+2. Completa los valores.
+
+El archivo `.env` está en `.gitignore` y **nunca** se sube a GitHub. La clave de Gemini tampoco se pega en el chat ni en capturas.
+
+| Variable         | Descripción                                                                  |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `ANALYZER`       | `gemini` lee el plano con Gemini (por defecto); `fake` devuelve medidas de ejemplo sin IA |
+| `GEMINI_API_KEY` | Clave de Google AI Studio (solo con `ANALYZER=gemini`)                       |
+| `GEMINI_MODEL`   | Modelo de Gemini que lee los planos (por defecto `gemini-3.5-flash`)         |
+| `SERVICE_TOKEN`  | Clave compartida con el backend; llega en el encabezado `X-Service-Token`    |
+| `MAX_FILE_MB`    | Tamaño máximo del plano en MB (por defecto 10)                               |
+| `PORT`           | Puerto del servidor (Render lo asigna solo)                                   |
+
+## Comandos
+
+| Comando                                  | Qué hace                                         |
+| ---------------------------------------- | ------------------------------------------------ |
+| `uvicorn app.main:app --reload`          | Inicia el servidor en `http://localhost:8000`    |
+| `pytest`                                 | Ejecuta las pruebas (no llaman a Gemini)         |
+
+La documentación interactiva (Swagger) queda en `http://localhost:8000/docs`.
+
 ## Equipo y responsabilidades
 
 | Integrante    | Responsabilidad                                                    |
