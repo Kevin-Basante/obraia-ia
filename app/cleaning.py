@@ -58,3 +58,10 @@ def clean_measurement(raw: RawMeasurement, floors: int) -> ElementMeasurement | 
         )
     except ValidationError:
         return None
+
+
+def clean_measurements(raws: list[RawMeasurement], floors: int) -> tuple[list[ElementMeasurement], int]:
+    """The valid measurements and how many were discarded."""
+    cleaned = [clean_measurement(raw, floors) for raw in raws]
+    valid = [measurement for measurement in cleaned if measurement is not None]
+    return valid, len(raws) - len(valid)
