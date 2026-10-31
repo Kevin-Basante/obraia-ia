@@ -164,6 +164,20 @@ app/
 tests/                   # Pruebas con pytest (Gemini simulado)
 ```
 
+## Despliegue en Render
+
+1. En Render: **New → Web Service** y conecta el repositorio `obraia-ia`.
+2. Configuración:
+   - **Runtime:** Python 3
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type:** Free
+   - **Health Check Path:** `/health`
+3. En **Environment** agrega `ANALYZER=gemini`, `GEMINI_API_KEY` y `SERVICE_TOKEN` (un texto aleatorio largo). El mismo `SERVICE_TOKEN` va en el backend como `AI_SERVICE_TOKEN`.
+4. La versión de Python sale del archivo `.python-version`.
+
+El plan gratuito de Render apaga el servicio tras 15 minutos sin uso; la primera llamada después puede tardar cerca de un minuto mientras arranca.
+
 ## Equipo y responsabilidades
 
 | Integrante    | Responsabilidad                                                    |
