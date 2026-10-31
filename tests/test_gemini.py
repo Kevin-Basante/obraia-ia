@@ -94,13 +94,13 @@ def test_busy_after_all_retries():
     assert models.models == ["gemini-test"] * 3
 
 
-def test_waits_before_each_retry():
+def test_waits_longer_before_each_retry():
     waits = []
     analyzer = GeminiAnalyzer("key", "gemini-test", retries=2, retry_delay=1.5, sleep=waits.append)
     analyzer._client = SimpleNamespace(models=FakeModels(error=api_error(503)))
     with pytest.raises(AnalyzerBusyError):
         analyzer.analyze(b"%PDF-", "application/pdf", 1)
-    assert waits == [1.5, 1.5]
+    assert waits == [1.5, 3.0]
 
 
 def test_parse_answer_reads_the_text_when_not_parsed():

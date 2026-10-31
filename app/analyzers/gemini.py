@@ -53,7 +53,8 @@ class GeminiAnalyzer:
         busy: errors.APIError | None = None
         for attempt in range(self.retries + 1):
             if attempt:
-                self._sleep(self.retry_delay)
+                # 2 s, then 4 s...: a short spike of demand has time to pass.
+                self._sleep(self.retry_delay * 2 ** (attempt - 1))
             try:
                 return self._ask(self.model_name, content, mime_type, prompt)
             except errors.APIError as ex:
