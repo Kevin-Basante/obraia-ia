@@ -36,6 +36,23 @@ class RawAnalysis(BaseModel):
     warnings: list[str] = []
 
 
+class AnalysisResponse(BaseModel):
+    """Answer of POST /api/v1/blueprints/analyze."""
+
+    measurements: list[ElementMeasurement]
+    warnings: list[str]
+    discarded: int = Field(description="Elements the model returned that were not valid")
+    model: str
+    elapsed_ms: int
+
+
+class HealthResponse(BaseModel):
+    status: str
+    analyzer: str
+    model: str
+    ready: bool
+
+
 class ErrorBody(BaseModel):
     code: str
     message: str
