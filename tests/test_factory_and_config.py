@@ -1,6 +1,9 @@
 import os
 
 from app import config
+from app.analyzers import factory
+from app.analyzers.fake import FakeAnalyzer
+from app.analyzers.gemini import GeminiAnalyzer
 
 
 def reload(monkeypatch, **env):
@@ -10,6 +13,7 @@ def reload(monkeypatch, **env):
         monkeypatch.setenv(key, value)
     monkeypatch.setattr(config, "_load_dotenv", lambda: None)
     config.get_settings.cache_clear()
+    factory.get_analyzer.cache_clear()
 
 
 def test_defaults(monkeypatch):
@@ -28,6 +32,18 @@ def test_reads_environment(monkeypatch):
     assert settings.gemini_model == "other-model"
     assert settings.max_file_mb == 5
     assert settings.service_token == "abc"
+
+
+def test_factory_picks_fake(monkeypatch):
+    reload(monkeypatch, ANALYZER="fake")
+    assert isinstance(factory.get_analyzer(), FakeAnalyzer)
+
+
+def test_factory_picks_gemini_by_default(monkeypatch):
+    reload(monkeypatch, GEMINI_API_KEY="key")
+    analyzer = factory.get_analyzer()
+    assert isinstance(analyzer, GeminiAnalyzer)
+    assert analyzer.ready()
 
 
 def test_dotenv_does_not_override_real_variables(monkeypatch, tmp_path):
