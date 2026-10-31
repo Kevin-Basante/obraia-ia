@@ -117,9 +117,10 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
 | 400         | `VALIDATION_ERROR`      | Falta el archivo o `floors` no es 1 o 2         |
 | 401         | `INVALID_SERVICE_TOKEN` | Falta `X-Service-Token` o no coincide           |
 | 413         | `FILE_TOO_LARGE`        | El plano pasa de `MAX_FILE_MB`                  |
-| 502         | `ANALYZER_FAILED`       | Gemini falló o su respuesta no se pudo leer     |
+| 502         | `ANALYZER_FAILED`       | Gemini rechazó la petición o su respuesta no se pudo leer |
 | 503         | `ANALYZER_NOT_READY`    | Falta `GEMINI_API_KEY`                          |
 | 503         | `SERVICE_NOT_CONFIGURED`| Falta `SERVICE_TOKEN` en el servidor            |
+| 503         | `ANALYZER_BUSY`         | Gemini sigue saturado después de los reintentos y del modelo de respaldo; se puede intentar más tarde |
 
 ## Cómo se lee un plano
 
