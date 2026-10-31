@@ -114,3 +114,24 @@ def test_parse_answer_rejects_invalid_json():
         parse_answer(None, "not json")
     with pytest.raises(AnalyzerError):
         parse_answer(None, None)
+
+
+def test_tries_the_fallback_model_when_the_main_one_stays_busy():
+    models = FakeModels(answers=[api_error(503), api_error(503), answer("roof")])
+    result = analyzer_with(models, fallback_model="gemini-lite", retries=1).analyze(b"%PDF-", "application/pdf", 1)
+    assert result.measurements[0].element_type == "roof"
+    assert models.models == ["gemini-test", "gemini-test", "gemini-lite"]
+
+
+def test_busy_when_the_fallback_model_is_busy_too():
+    models = FakeModels(error=api_error(429))
+    with pytest.raises(AnalyzerBusyError, match="answered 429"):
+        analyzer_with(models, fallback_model="gemini-lite", retries=1).analyze(b"%PDF-", "application/pdf", 1)
+    assert models.models == ["gemini-test", "gemini-test", "gemini-lite", "gemini-lite"]
+
+
+def test_fallback_equal_to_the_main_model_is_not_tried_twice():
+    models = FakeModels(error=api_error(503))
+    with pytest.raises(AnalyzerBusyError):
+        analyzer_with(models, fallback_model="gemini-test").analyze(b"%PDF-", "application/pdf", 1)
+    assert models.models == ["gemini-test"]

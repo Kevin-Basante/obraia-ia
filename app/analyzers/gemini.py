@@ -26,11 +26,13 @@ class GeminiAnalyzer:
         self,
         api_key: str,
         model_name: str,
+        fallback_model: str = "",
         retries: int = 0,
         retry_delay: float = 2.0,
         sleep: Callable[[float], None] = time.sleep,
     ):
         self.model_name = model_name
+        self.fallback_model = fallback_model
         self.retries = retries
         self.retry_delay = retry_delay
         self._api_key = api_key
@@ -51,18 +53,25 @@ class GeminiAnalyzer:
             raise AnalyzerError("GEMINI_API_KEY is not set")
         prompt = f"{EXTRACTION_PROMPT}\nThe project has {floors} floor(s)."
         busy: errors.APIError | None = None
-        for attempt in range(self.retries + 1):
-            if attempt:
-                # 2 s, then 4 s...: a short spike of demand has time to pass.
-                self._sleep(self.retry_delay * 2 ** (attempt - 1))
-            try:
-                return self._ask(self.model_name, content, mime_type, prompt)
-            except errors.APIError as ex:
-                if ex.code not in BUSY_CODES:
-                    raise AnalyzerError(f"Gemini answered {ex.code}: {ex.message}") from ex
-                logger.warning("Gemini %s is busy (%s: %s), try %d", self.model_name, ex.code, ex.message, attempt + 1)
-                busy = ex
+        for model in self._models():
+            for attempt in range(self.retries + 1):
+                if attempt:
+                    # 2 s, then 4 s...: a short spike of demand has time to pass.
+                    self._sleep(self.retry_delay * 2 ** (attempt - 1))
+                try:
+                    return self._ask(model, content, mime_type, prompt)
+                except errors.APIError as ex:
+                    if ex.code not in BUSY_CODES:
+                        raise AnalyzerError(f"Gemini answered {ex.code}: {ex.message}") from ex
+                    logger.warning("Gemini %s is busy (%s: %s), try %d", model, ex.code, ex.message, attempt + 1)
+                    busy = ex
         raise AnalyzerBusyError(f"Gemini is busy right now (it answered {busy.code}). Try again in a few minutes")
+
+    def _models(self) -> list[str]:
+        """The main model, then the fallback model when there is one."""
+        if self.fallback_model and self.fallback_model != self.model_name:
+            return [self.model_name, self.fallback_model]
+        return [self.model_name]
 
     def _ask(self, model: str, content: bytes, mime_type: str, prompt: str) -> RawAnalysis:
         response = self._get_client().models.generate_content(
