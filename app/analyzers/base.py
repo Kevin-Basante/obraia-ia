@@ -9,6 +9,10 @@ class AnalyzerError(Exception):
     """The model could not be reached or its answer could not be read."""
 
 
+class AnalyzerBusyError(AnalyzerError):
+    """The model is overloaded or out of quota for now; the same request may work a bit later."""
+
+
 class BlueprintAnalyzer(Protocol):
     """Reads a blueprint file and returns the elements it finds, before cleaning."""
 
