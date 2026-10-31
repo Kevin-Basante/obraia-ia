@@ -19,6 +19,8 @@ def make_settings(**overrides) -> Settings:
         "gemini_model": "gemini-test",
         "service_token": TOKEN,
         "max_file_mb": 1,
+        "gemini_fallback_model": "",
+        "gemini_retries": 0,
     }
     values.update(overrides)
     return Settings(**values)

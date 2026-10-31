@@ -7,7 +7,8 @@ from app.analyzers.gemini import GeminiAnalyzer
 
 
 def reload(monkeypatch, **env):
-    for key in ("ANALYZER", "GEMINI_API_KEY", "GEMINI_MODEL", "SERVICE_TOKEN", "MAX_FILE_MB"):
+    for key in ("ANALYZER", "GEMINI_API_KEY", "GEMINI_MODEL", "SERVICE_TOKEN", "MAX_FILE_MB",
+                "GEMINI_FALLBACK_MODEL", "GEMINI_RETRIES"):
         monkeypatch.delenv(key, raising=False)
     for key, value in env.items():
         monkeypatch.setenv(key, value)
@@ -23,6 +24,8 @@ def test_defaults(monkeypatch):
     assert settings.gemini_model == config.DEFAULT_MODEL
     assert settings.max_file_mb == 10
     assert settings.service_token == ""
+    assert settings.gemini_fallback_model == config.DEFAULT_FALLBACK_MODEL
+    assert settings.gemini_retries == 2
 
 
 def test_reads_environment(monkeypatch):
@@ -32,6 +35,20 @@ def test_reads_environment(monkeypatch):
     assert settings.gemini_model == "other-model"
     assert settings.max_file_mb == 5
     assert settings.service_token == "abc"
+
+
+def test_reads_the_fallback_model_and_retries(monkeypatch):
+    reload(monkeypatch, GEMINI_FALLBACK_MODEL=" backup-model ", GEMINI_RETRIES="3")
+    settings = config.get_settings()
+    assert settings.gemini_fallback_model == "backup-model"
+    assert settings.gemini_retries == 3
+
+
+def test_empty_fallback_and_negative_retries(monkeypatch):
+    reload(monkeypatch, GEMINI_FALLBACK_MODEL="", GEMINI_RETRIES="-1")
+    settings = config.get_settings()
+    assert settings.gemini_fallback_model == ""
+    assert settings.gemini_retries == 0
 
 
 def test_factory_picks_fake(monkeypatch):
