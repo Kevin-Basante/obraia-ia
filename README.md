@@ -119,6 +119,16 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
 | 503         | `ANALYZER_NOT_READY`    | Falta `GEMINI_API_KEY`                          |
 | 503         | `SERVICE_NOT_CONFIGURED`| Falta `SERVICE_TOKEN` en el servidor            |
 
+## Cómo se lee un plano
+
+1. **Tipo de archivo:** se reconoce por sus primeros bytes, no por el nombre, así que un `.pdf` falso se rechaza.
+2. **Modelo:** el plano y unas instrucciones (`app/prompt.py`) se envían a Gemini, que responde en JSON con la forma de `RawAnalysis`. La temperatura es 0 para que el mismo plano dé el mismo resultado.
+3. **Limpieza** (`app/cleaning.py`): cada elemento se revisa antes de devolverlo.
+   - Solo se aceptan los 7 tipos del backend (también en plural, como `walls`).
+   - Cada tipo guarda solo las medidas que necesita: volumen (largo, ancho y alto) para cimientos, columnas, vigas y losas; largo y alto para muros; largo y ancho para pisos y cubierta.
+   - Las medidas se redondean a centímetros. Un elemento sin una medida obligatoria, con valores fuera de rango o en un piso que la obra no tiene se descarta y se cuenta en `discarded`.
+4. **Respuesta:** las medidas válidas, las advertencias del modelo (en español), el modelo usado y el tiempo que tardó.
+
 ## Equipo y responsabilidades
 
 | Integrante    | Responsabilidad                                                    |
