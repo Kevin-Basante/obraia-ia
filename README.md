@@ -69,6 +69,56 @@ El archivo `.env` está en `.gitignore` y **nunca** se sube a GitHub. La clave d
 
 La documentación interactiva (Swagger) queda en `http://localhost:8000/docs`.
 
+## Endpoints
+
+| Método | Ruta                          | Token | Qué hace                                             |
+| ------ | ----------------------------- | ----- | ---------------------------------------------------- |
+| GET    | `/health`                     | No    | Estado del servicio; `ready` dice si puede analizar   |
+| POST   | `/api/v1/blueprints/analyze`  | Sí    | Lee un plano y devuelve las medidas de sus elementos  |
+| GET    | `/docs`                       | No    | Documentación Swagger                                |
+
+`POST /api/v1/blueprints/analyze` recibe un formulario `multipart/form-data`:
+
+| Campo    | Tipo    | Descripción                                   |
+| -------- | ------- | --------------------------------------------- |
+| `file`   | archivo | Plano en PDF, PNG, JPG o WEBP                 |
+| `floors` | número  | Pisos de la obra: 1 o 2 (por defecto 1)       |
+
+Respuesta (200):
+
+```json
+{
+  "measurements": [
+    {
+      "element_type": "wall",
+      "floor_number": 1,
+      "length_m": 36.0,
+      "width_m": null,
+      "height_m": 2.4,
+      "quantity": 1,
+      "notes": "Muros de fachada"
+    }
+  ],
+  "warnings": ["La escala del plano no es visible"],
+  "discarded": 0,
+  "model": "gemini-3.5-flash",
+  "elapsed_ms": 8421
+}
+```
+
+Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`):
+
+| Código HTTP | `code`                  | Cuándo                                          |
+| ----------- | ----------------------- | ----------------------------------------------- |
+| 400         | `EMPTY_FILE`            | El archivo está vacío                           |
+| 400         | `UNSUPPORTED_FILE`      | No es PDF, PNG, JPG ni WEBP                     |
+| 400         | `VALIDATION_ERROR`      | Falta el archivo o `floors` no es 1 o 2         |
+| 401         | `INVALID_SERVICE_TOKEN` | Falta `X-Service-Token` o no coincide           |
+| 413         | `FILE_TOO_LARGE`        | El plano pasa de `MAX_FILE_MB`                  |
+| 502         | `ANALYZER_FAILED`       | Gemini falló o su respuesta no se pudo leer     |
+| 503         | `ANALYZER_NOT_READY`    | Falta `GEMINI_API_KEY`                          |
+| 503         | `SERVICE_NOT_CONFIGURED`| Falta `SERVICE_TOKEN` en el servidor            |
+
 ## Equipo y responsabilidades
 
 | Integrante    | Responsabilidad                                                    |
