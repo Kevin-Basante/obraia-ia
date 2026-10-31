@@ -107,6 +107,12 @@ def test_rejects_unsupported_file(client):
     assert response.json()["error"]["code"] == "UNSUPPORTED_FILE"
 
 
+def test_rejects_file_larger_than_the_limit(client):
+    response = analyze(client, content=b"%PDF-" + b"0" * (1024 * 1024))
+    assert response.status_code == 413
+    assert response.json()["error"]["code"] == "FILE_TOO_LARGE"
+
+
 def test_rejects_floors_out_of_range(client):
     response = analyze(client, floors=3)
     assert response.status_code == 400
