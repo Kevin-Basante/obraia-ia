@@ -17,6 +17,25 @@ class ElementMeasurement(BaseModel):
     notes: str | None = Field(default=None, max_length=500)
 
 
+class RawMeasurement(BaseModel):
+    """What the model returns for each element, before it is checked."""
+
+    element_type: str
+    floor_number: int | None = None
+    length_m: float | None = None
+    width_m: float | None = None
+    height_m: float | None = None
+    quantity: int | None = None
+    notes: str | None = None
+
+
+class RawAnalysis(BaseModel):
+    """Full answer of the model: the elements and what it could not read."""
+
+    measurements: list[RawMeasurement]
+    warnings: list[str] = []
+
+
 class ErrorBody(BaseModel):
     code: str
     message: str
