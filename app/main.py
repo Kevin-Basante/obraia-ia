@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 
 from app.errors import register_error_handlers
-from app.routers import health
+from app.routers import analysis, health
 
 app = FastAPI(
     title="ObraIA AI service",
@@ -13,3 +13,4 @@ app = FastAPI(
 )
 register_error_handlers(app)
 app.include_router(health.router)
+app.include_router(analysis.router)
