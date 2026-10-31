@@ -59,12 +59,17 @@ class GeminiAnalyzer:
                     # 2 s, then 4 s...: a short spike of demand has time to pass.
                     self._sleep(self.retry_delay * 2 ** (attempt - 1))
                 try:
-                    return self._ask(model, content, mime_type, prompt)
+                    result = self._ask(model, content, mime_type, prompt)
                 except errors.APIError as ex:
                     if ex.code not in BUSY_CODES:
                         raise AnalyzerError(f"Gemini answered {ex.code}: {ex.message}") from ex
                     logger.warning("Gemini %s is busy (%s: %s), try %d", model, ex.code, ex.message, attempt + 1)
                     busy = ex
+                    continue
+                if model != self.model_name:
+                    note = f"The backup model {model} read this blueprint because {self.model_name} was busy"
+                    result.warnings = [*result.warnings, note]
+                return result
         raise AnalyzerBusyError(f"Gemini is busy right now (it answered {busy.code}). Try again in a few minutes")
 
     def _models(self) -> list[str]:

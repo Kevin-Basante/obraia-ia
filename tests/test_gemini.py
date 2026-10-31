@@ -121,6 +121,12 @@ def test_tries_the_fallback_model_when_the_main_one_stays_busy():
     result = analyzer_with(models, fallback_model="gemini-lite", retries=1).analyze(b"%PDF-", "application/pdf", 1)
     assert result.measurements[0].element_type == "roof"
     assert models.models == ["gemini-test", "gemini-test", "gemini-lite"]
+    assert result.warnings == ["The backup model gemini-lite read this blueprint because gemini-test was busy"]
+
+
+def test_no_warning_when_the_main_model_answers():
+    result = analyzer_with(FakeModels(answer()), fallback_model="gemini-lite").analyze(b"%PDF-", "application/pdf", 1)
+    assert result.warnings == []
 
 
 def test_busy_when_the_fallback_model_is_busy_too():
