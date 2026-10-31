@@ -126,6 +126,9 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
 
 1. **Tipo de archivo:** se reconoce por sus primeros bytes, no por el nombre, así que un `.pdf` falso se rechaza.
 2. **Modelo:** el plano y unas instrucciones (`app/prompt.py`) se envían a Gemini, que responde en JSON con la forma de `RawAnalysis`. La temperatura es 0 para que el mismo plano dé el mismo resultado.
+   - Si Gemini responde que está saturado (429, 500, 503 o 504), se reintenta hasta `GEMINI_RETRIES` veces, esperando 2 s, luego 4 s.
+   - Si el modelo principal sigue saturado, se prueba `GEMINI_FALLBACK_MODEL`, y la respuesta trae una advertencia que lo dice.
+   - Si los dos siguen saturados, se responde `503 ANALYZER_BUSY`. Cada intento queda en los logs de Render.
 3. **Limpieza** (`app/cleaning.py`): cada elemento se revisa antes de devolverlo.
    - Solo se aceptan los 7 tipos del backend (también en plural, como `walls`).
    - Cada tipo guarda solo las medidas que necesita: volumen (largo, ancho y alto) para cimientos, columnas, vigas y losas; largo y alto para muros; largo y ancho para pisos y cubierta.
