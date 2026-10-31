@@ -1,5 +1,6 @@
 """Reads a blueprint and returns its measurements."""
 
+import logging
 import time
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
@@ -13,6 +14,8 @@ from app.errors import ServiceError
 from app.file_types import detect_mime_type
 from app.schemas import AnalysisResponse, ErrorResponse
 from app.security import require_service_token
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/blueprints", tags=["Blueprints"], dependencies=[Depends(require_service_token)])
 
@@ -51,8 +54,10 @@ async def analyze_blueprint(
         # The SDK call blocks, so it runs outside the event loop.
         raw = await run_in_threadpool(analyzer.analyze, content, mime_type, floors)
     except AnalyzerBusyError as ex:
+        logger.warning("Analysis of %s refused, the model is busy: %s", file.filename, ex)
         raise ServiceError(503, "ANALYZER_BUSY", str(ex)) from ex
     except AnalyzerError as ex:
+        logger.error("Analysis of %s failed: %s", file.filename, ex)
         raise ServiceError(502, "ANALYZER_FAILED", str(ex)) from ex
     measurements, discarded = clean_measurements(raw.measurements, floors)
     return AnalysisResponse(

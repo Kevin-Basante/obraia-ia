@@ -149,3 +149,11 @@ def test_answers_503_when_the_model_is_busy(client):
         "code": "ANALYZER_BUSY",
         "message": "Gemini is busy right now. Try again in a few minutes",
     }
+
+
+def test_failures_are_logged(client, caplog):
+    use(StubAnalyzer(error=AnalyzerError("Gemini answered 400: bad file")))
+    with caplog.at_level("WARNING"):
+        analyze(client)
+    assert "plan.pdf" in caplog.text
+    assert "Gemini answered 400: bad file" in caplog.text
