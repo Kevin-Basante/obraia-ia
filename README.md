@@ -129,6 +129,41 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
    - Las medidas se redondean a centímetros. Un elemento sin una medida obligatoria, con valores fuera de rango o en un piso que la obra no tiene se descarta y se cuenta en `discarded`.
 4. **Respuesta:** las medidas válidas, las advertencias del modelo (en español), el modelo usado y el tiempo que tardó.
 
+## Patrones de diseño
+
+| Patrón             | Dónde                                   | Para qué                                                         |
+| ------------------ | --------------------------------------- | ---------------------------------------------------------------- |
+| Strategy           | `app/analyzers/` (`BlueprintAnalyzer`)  | Cambiar entre Gemini y el analizador de ejemplo sin tocar la ruta |
+| Factory            | `app/analyzers/factory.py`              | Crear el analizador que dice `ANALYZER`                          |
+| Inyección de dependencias | `Depends` de FastAPI             | Las pruebas reemplazan el analizador y la configuración          |
+| DTO                | `app/schemas.py`                        | Formas de los datos que entran y salen del servicio              |
+
+En el backend, el **Adapter** (`AiServiceAdapter`) traduce las respuestas de este servicio al dominio de Java y el **Proxy** (`AiServiceProxy`) controla el acceso, guarda en caché los análisis y limita cuántos se hacen por obra.
+
+## Estructura
+
+```text
+app/
+├── main.py              # Crea la aplicación y registra las rutas
+├── config.py            # Variables de entorno
+├── errors.py            # Errores con la forma { error: { code, message } }
+├── security.py          # Revisa el encabezado X-Service-Token
+├── elements.py          # Tipos de elemento y medidas que necesita cada uno
+├── file_types.py        # Reconoce PDF, PNG, JPG y WEBP
+├── schemas.py           # Modelos de entrada y salida (Pydantic)
+├── prompt.py            # Instrucciones para el modelo
+├── cleaning.py          # Revisa y limpia las medidas del modelo
+├── analyzers/
+│   ├── base.py          # Interfaz BlueprintAnalyzer (Strategy)
+│   ├── gemini.py        # Lee el plano con Gemini
+│   ├── fake.py          # Medidas de ejemplo, sin IA
+│   └── factory.py       # Elige el analizador
+└── routers/
+    ├── health.py        # GET /health
+    └── analysis.py      # POST /api/v1/blueprints/analyze
+tests/                   # Pruebas con pytest (Gemini simulado)
+```
+
 ## Equipo y responsabilidades
 
 | Integrante    | Responsabilidad                                                    |
