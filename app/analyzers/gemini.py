@@ -1,7 +1,7 @@
 """Analyzer that reads the blueprint with Gemini (Google AI Studio)."""
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 from pydantic import ValidationError
 
 from app.analyzers.base import AnalyzerError
@@ -30,15 +30,18 @@ class GeminiAnalyzer:
         if not self.ready():
             raise AnalyzerError("GEMINI_API_KEY is not set")
         prompt = f"{EXTRACTION_PROMPT}\nThe project has {floors} floor(s)."
-        response = self._get_client().models.generate_content(
-            model=self.model_name,
-            contents=[types.Part.from_bytes(data=content, mime_type=mime_type), prompt],
-            config=types.GenerateContentConfig(
-                temperature=0,
-                response_mime_type="application/json",
-                response_schema=RawAnalysis,
-            ),
-        )
+        try:
+            response = self._get_client().models.generate_content(
+                model=self.model_name,
+                contents=[types.Part.from_bytes(data=content, mime_type=mime_type), prompt],
+                config=types.GenerateContentConfig(
+                    temperature=0,
+                    response_mime_type="application/json",
+                    response_schema=RawAnalysis,
+                ),
+            )
+        except errors.APIError as ex:
+            raise AnalyzerError(f"Gemini answered {ex.code}: {ex.message}") from ex
         return parse_answer(response.parsed, response.text)
 
 
