@@ -72,3 +72,10 @@ def test_dotenv_does_not_override_real_variables(monkeypatch, tmp_path):
     assert os.environ["GEMINI_MODEL"] == "from-env"
     assert os.environ["MAX_FILE_MB"] == "3"
     monkeypatch.delenv("MAX_FILE_MB")
+
+
+def test_factory_passes_the_fallback_model_and_retries(monkeypatch):
+    reload(monkeypatch, GEMINI_API_KEY="key", GEMINI_FALLBACK_MODEL="backup-model", GEMINI_RETRIES="1")
+    analyzer = factory.get_analyzer()
+    assert analyzer.fallback_model == "backup-model"
+    assert analyzer.retries == 1

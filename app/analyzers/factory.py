@@ -13,4 +13,9 @@ def get_analyzer() -> BlueprintAnalyzer:
     settings = get_settings()
     if settings.analyzer == "fake":
         return FakeAnalyzer()
-    return GeminiAnalyzer(settings.gemini_api_key, settings.gemini_model)
+    return GeminiAnalyzer(
+        settings.gemini_api_key,
+        settings.gemini_model,
+        fallback_model=settings.gemini_fallback_model,
+        retries=settings.gemini_retries,
+    )
