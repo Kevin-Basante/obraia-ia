@@ -5,7 +5,7 @@ import time
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
-from app.analyzers.base import AnalyzerError, BlueprintAnalyzer
+from app.analyzers.base import AnalyzerBusyError, AnalyzerError, BlueprintAnalyzer
 from app.analyzers.factory import get_analyzer
 from app.cleaning import clean_measurements
 from app.config import Settings, get_settings
@@ -25,7 +25,7 @@ router = APIRouter(prefix="/api/v1/blueprints", tags=["Blueprints"], dependencie
         401: {"model": ErrorResponse, "description": "Missing or wrong X-Service-Token"},
         413: {"model": ErrorResponse, "description": "The file is too large"},
         502: {"model": ErrorResponse, "description": "The model failed or its answer was not valid"},
-        503: {"model": ErrorResponse, "description": "The analyzer is not configured"},
+        503: {"model": ErrorResponse, "description": "The analyzer is not configured, or the model is busy"},
     },
 )
 async def analyze_blueprint(
@@ -50,6 +50,8 @@ async def analyze_blueprint(
     try:
         # The SDK call blocks, so it runs outside the event loop.
         raw = await run_in_threadpool(analyzer.analyze, content, mime_type, floors)
+    except AnalyzerBusyError as ex:
+        raise ServiceError(503, "ANALYZER_BUSY", str(ex)) from ex
     except AnalyzerError as ex:
         raise ServiceError(502, "ANALYZER_FAILED", str(ex)) from ex
     measurements, discarded = clean_measurements(raw.measurements, floors)

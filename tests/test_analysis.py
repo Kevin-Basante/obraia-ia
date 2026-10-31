@@ -1,4 +1,4 @@
-from app.analyzers.base import AnalyzerError
+from app.analyzers.base import AnalyzerBusyError, AnalyzerError
 from app.analyzers.factory import get_analyzer
 from app.main import app
 from app.schemas import RawAnalysis, RawMeasurement
@@ -139,3 +139,13 @@ def test_answers_502_when_the_model_fails(client):
     response = analyze(client)
     assert response.status_code == 502
     assert response.json()["error"] == {"code": "ANALYZER_FAILED", "message": "Gemini answered 429: quota"}
+
+
+def test_answers_503_when_the_model_is_busy(client):
+    use(StubAnalyzer(error=AnalyzerBusyError("Gemini is busy right now. Try again in a few minutes")))
+    response = analyze(client)
+    assert response.status_code == 503
+    assert response.json()["error"] == {
+        "code": "ANALYZER_BUSY",
+        "message": "Gemini is busy right now. Try again in a few minutes",
+    }
