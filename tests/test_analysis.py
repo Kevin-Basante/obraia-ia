@@ -1,3 +1,4 @@
+from app.analyzers.base import AnalyzerError
 from app.analyzers.factory import get_analyzer
 from app.main import app
 from app.schemas import RawAnalysis, RawMeasurement
@@ -124,3 +125,17 @@ def test_rejects_missing_file(client):
     response = client.post("/api/v1/blueprints/analyze", headers=auth())
     assert response.status_code == 400
     assert "file" in response.json()["error"]["message"]
+
+
+def test_answers_503_when_the_analyzer_has_no_key(client):
+    use(StubAnalyzer(ready=False))
+    response = analyze(client)
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "ANALYZER_NOT_READY"
+
+
+def test_answers_502_when_the_model_fails(client):
+    use(StubAnalyzer(error=AnalyzerError("Gemini answered 429: quota")))
+    response = analyze(client)
+    assert response.status_code == 502
+    assert response.json()["error"] == {"code": "ANALYZER_FAILED", "message": "Gemini answered 429: quota"}
