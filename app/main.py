@@ -1,9 +1,14 @@
 """Entry point: uvicorn app.main:app"""
 
+import logging
+
 from fastapi import FastAPI
 
 from app.errors import register_error_handlers
 from app.routers import analysis, health
+
+# Messages of the service (retries, failures) appear in the Render logs.
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
 app = FastAPI(
     title="ObraIA AI service",
