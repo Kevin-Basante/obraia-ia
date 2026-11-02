@@ -13,3 +13,7 @@ venv/
 # Editors
 .vscode/
 .idea/
+
+# Coverage
+.coverage
+htmlcov/
