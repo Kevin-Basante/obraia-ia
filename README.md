@@ -82,6 +82,7 @@ La documentación interactiva (Swagger) queda en `http://localhost:8000/docs`.
 | ------ | ----------------------------- | ----- | ---------------------------------------------------- |
 | GET    | `/health`                     | No    | Estado del servicio; `ready` dice si puede analizar   |
 | POST   | `/api/v1/blueprints/analyze`  | Sí    | Lee un plano y devuelve las medidas de sus elementos  |
+| GET    | `/api/v1/elements`            | Sí    | Tipos de elemento, medidas que necesita cada uno y su unidad |
 | GET    | `/docs`                       | No    | Documentación Swagger                                |
 
 `POST /api/v1/blueprints/analyze` recibe un formulario `multipart/form-data`:
