@@ -1,3 +1,4 @@
+from app import __version__
 from tests.conftest import make_settings
 
 
@@ -14,3 +15,7 @@ def test_docs_are_available(client):
 
 def test_settings_max_file_bytes():
     assert make_settings(max_file_mb=2).max_file_bytes == 2 * 1024 * 1024
+
+
+def test_docs_show_the_service_version(client):
+    assert client.get("/openapi.json").json()["info"]["version"] == __version__
