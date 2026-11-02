@@ -96,3 +96,17 @@ def test_parse_answer_rejects_invalid_json():
         parse_answer(None, "not json")
     with pytest.raises(AnalyzerError):
         parse_answer(None, None)
+
+
+def test_creates_the_client_once_on_first_use(monkeypatch):
+    created = []
+
+    class FakeClient:
+        def __init__(self, api_key):
+            created.append(api_key)
+
+    monkeypatch.setattr("app.analyzers.gemini.genai.Client", FakeClient)
+    analyzer = GeminiAnalyzer("key", "gemini-test")
+    assert created == []
+    assert analyzer._get_client() is analyzer._get_client()
+    assert created == ["key"]
