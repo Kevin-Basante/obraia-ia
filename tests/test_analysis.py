@@ -172,3 +172,20 @@ def test_rejects_a_pdf_with_too_many_pages(client):
 def test_accepts_a_pdf_at_the_page_limit(client):
     response = client.post("/api/v1/blueprints/analyze", files={"file": ("plan.pdf", pdf_with_pages(10))}, headers=auth())
     assert response.status_code == 200
+
+
+def test_repeated_rows_are_merged(client):
+    row = RawMeasurement(element_type="wall", length_m=3, height_m=2.4, quantity=2)
+    use(StubAnalyzer(RawAnalysis(measurements=[row, row])))
+    body = analyze(client).json()
+    assert len(body["measurements"]) == 1
+    assert body["measurements"][0]["quantity"] == 4
+    assert body["merged"] == 1
+
+
+def test_unusual_sizes_add_a_warning(client):
+    row = RawMeasurement(element_type="wall", length_m=3, height_m=9)
+    use(StubAnalyzer(RawAnalysis(measurements=[row], warnings=["Escala no visible"])))
+    body = analyze(client).json()
+    assert body["warnings"][0] == "Escala no visible"
+    assert "height of 9 m is unusual" in body["warnings"][1]
