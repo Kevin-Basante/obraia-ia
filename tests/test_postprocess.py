@@ -2,6 +2,7 @@
 
 from app.elements import ElementType
 from app.postprocess.base import Pipeline, Report
+from app.postprocess.merge import MergeDuplicates
 from app.schemas import ElementMeasurement
 
 
@@ -35,3 +36,21 @@ def test_empty_pipeline_keeps_everything():
     result, report = Pipeline([]).run(items)
     assert result == items
     assert report == Report()
+
+
+def merge(items):
+    report = Report()
+    return MergeDuplicates().apply(items, report), report
+
+
+def test_merges_equal_rows_and_adds_quantities():
+    result, report = merge([wall(quantity=2), wall(quantity=3)])
+    assert len(result) == 1
+    assert result[0].quantity == 5
+    assert report.merged == 1
+
+
+def test_keeps_rows_of_other_floors_or_sizes():
+    result, report = merge([wall(), wall(floor=2), wall(length=4)])
+    assert len(result) == 3
+    assert report.merged == 0
