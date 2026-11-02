@@ -36,3 +36,10 @@ def test_health_reports_version_and_uptime(client):
 def test_docs_describe_each_group_of_routes(client):
     tags = [tag["name"] for tag in client.get("/openapi.json").json()["tags"]]
     assert tags == ["Health", "Blueprints", "Elements"]
+
+
+def test_docs_show_an_example_answer(client):
+    schema = client.get("/openapi.json").json()["components"]["schemas"]["AnalysisResponse"]
+    example = schema["examples"][0]
+    assert example["measurements"][0]["element_type"] == "wall"
+    assert example["summary"][0]["unit"] == "m2"
