@@ -5,6 +5,7 @@ from app.analyzers import factory
 from app.analyzers.fake import FakeAnalyzer
 from app.analyzers.fallback import FallbackAnalyzer
 from app.analyzers.gemini import GeminiAnalyzer
+from app.analyzers.retrying import RetryingAnalyzer
 
 
 def reload(monkeypatch, **env):
@@ -94,3 +95,15 @@ def test_reads_the_pdf_page_limit(monkeypatch):
 def test_pdf_page_limit_is_at_least_one(monkeypatch):
     reload(monkeypatch, MAX_PDF_PAGES="0")
     assert config.get_settings().max_pdf_pages == 1
+
+
+def test_no_backup_without_a_fallback_model(monkeypatch):
+    reload(monkeypatch, GEMINI_API_KEY="key", GEMINI_FALLBACK_MODEL="")
+    analyzer = factory.get_analyzer()
+    assert isinstance(analyzer, RetryingAnalyzer)
+    assert analyzer.inner.model_name == config.DEFAULT_MODEL
+
+
+def test_no_backup_when_it_is_the_main_model(monkeypatch):
+    reload(monkeypatch, GEMINI_API_KEY="key", GEMINI_MODEL="same", GEMINI_FALLBACK_MODEL="same")
+    assert isinstance(factory.get_analyzer(), RetryingAnalyzer)
