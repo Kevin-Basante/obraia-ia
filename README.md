@@ -70,6 +70,9 @@ El archivo `.env` está en `.gitignore` y **nunca** se sube a GitHub. La clave d
 | ---------------------------------------- | ------------------------------------------------ |
 | `uvicorn app.main:app --reload`          | Inicia el servidor en `http://localhost:8000`    |
 | `pytest`                                 | Ejecuta las pruebas (no llaman a Gemini)         |
+| `pytest --cov`                           | Pruebas con el reporte de cobertura              |
+| `ruff check .`                           | Revisa errores y el orden de los imports         |
+| `ruff format .`                          | Da formato al código                             |
 
 La documentación interactiva (Swagger) queda en `http://localhost:8000/docs`.
 
