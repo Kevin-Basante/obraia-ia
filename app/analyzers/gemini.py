@@ -1,9 +1,5 @@
 """Analyzer that reads the blueprint with Gemini (Google AI Studio)."""
 
-import logging
-import time
-from collections.abc import Callable
-
 from google import genai
 from google.genai import errors, types
 from pydantic import ValidationError
@@ -12,32 +8,21 @@ from app.analyzers.base import AnalyzerBusyError, AnalyzerError
 from app.prompt import EXTRACTION_PROMPT
 from app.schemas import RawAnalysis
 
-
-logger = logging.getLogger(__name__)
-
 # Codes Gemini answers when it is overloaded or out of quota for now: trying again may work.
 BUSY_CODES = frozenset({429, 500, 503, 504})
 
 
 class GeminiAnalyzer:
-    """Sends the file and the instructions to Gemini and asks for JSON with the RawAnalysis shape."""
+    """Sends the file and the instructions to one Gemini model and asks for JSON with the RawAnalysis shape.
 
-    def __init__(
-        self,
-        api_key: str,
-        model_name: str,
-        fallback_model: str = "",
-        retries: int = 0,
-        retry_delay: float = 2.0,
-        sleep: Callable[[float], None] = time.sleep,
-    ):
+    It makes a single call. Retries and the backup model are added around it by
+    RetryingAnalyzer and FallbackAnalyzer (see factory.py).
+    """
+
+    def __init__(self, api_key: str, model_name: str):
         self.model_name = model_name
-        self.fallback_model = fallback_model
-        self.retries = retries
-        self.retry_delay = retry_delay
         self._api_key = api_key
         self._client: genai.Client | None = None
-        self._sleep = sleep
 
     def ready(self) -> bool:
         return bool(self._api_key)
@@ -52,35 +37,18 @@ class GeminiAnalyzer:
         if not self.ready():
             raise AnalyzerError("GEMINI_API_KEY is not set")
         prompt = f"{EXTRACTION_PROMPT}\nThe project has {floors} floor(s)."
-        busy: errors.APIError | None = None
-        for model in self._models():
-            for attempt in range(self.retries + 1):
-                if attempt:
-                    # 2 s, then 4 s...: a short spike of demand has time to pass.
-                    self._sleep(self.retry_delay * 2 ** (attempt - 1))
-                try:
-                    result = self._ask(model, content, mime_type, prompt)
-                except errors.APIError as ex:
-                    if ex.code not in BUSY_CODES:
-                        raise AnalyzerError(f"Gemini answered {ex.code}: {ex.message}") from ex
-                    logger.warning("Gemini %s is busy (%s: %s), try %d", model, ex.code, ex.message, attempt + 1)
-                    busy = ex
-                    continue
-                if model != self.model_name:
-                    note = f"The backup model {model} read this blueprint because {self.model_name} was busy"
-                    result.warnings = [*result.warnings, note]
-                return result
-        raise AnalyzerBusyError(f"Gemini is busy right now (it answered {busy.code}). Try again in a few minutes")
+        try:
+            return self._ask(content, mime_type, prompt)
+        except errors.APIError as ex:
+            if ex.code in BUSY_CODES:
+                raise AnalyzerBusyError(
+                    f"Gemini is busy right now (it answered {ex.code}). Try again in a few minutes"
+                ) from ex
+            raise AnalyzerError(f"Gemini answered {ex.code}: {ex.message}") from ex
 
-    def _models(self) -> list[str]:
-        """The main model, then the fallback model when there is one."""
-        if self.fallback_model and self.fallback_model != self.model_name:
-            return [self.model_name, self.fallback_model]
-        return [self.model_name]
-
-    def _ask(self, model: str, content: bytes, mime_type: str, prompt: str) -> RawAnalysis:
+    def _ask(self, content: bytes, mime_type: str, prompt: str) -> RawAnalysis:
         response = self._get_client().models.generate_content(
-            model=model,
+            model=self.model_name,
             contents=[types.Part.from_bytes(data=content, mime_type=mime_type), prompt],
             config=types.GenerateContentConfig(
                 temperature=0,

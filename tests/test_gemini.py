@@ -25,8 +25,8 @@ class FakeModels:
         return answer
 
 
-def analyzer_with(models, **options) -> GeminiAnalyzer:
-    analyzer = GeminiAnalyzer("key", "gemini-test", sleep=lambda seconds: None, **options)
+def analyzer_with(models) -> GeminiAnalyzer:
+    analyzer = GeminiAnalyzer("key", "gemini-test")
     analyzer._client = SimpleNamespace(models=models)
     return analyzer
 
@@ -72,35 +72,17 @@ def test_translates_api_errors():
     assert not isinstance(raised.value, AnalyzerBusyError)
 
 
-def test_other_errors_are_not_retried():
-    models = FakeModels(answers=[api_error(400), answer()])
-    with pytest.raises(AnalyzerError):
-        analyzer_with(models, retries=2).analyze(b"%PDF-", "application/pdf", 1)
+def test_makes_a_single_call():
+    models = FakeModels(answers=[api_error(503), answer()])
+    with pytest.raises(AnalyzerBusyError):
+        analyzer_with(models).analyze(b"%PDF-", "application/pdf", 1)
     assert models.models == ["gemini-test"]
 
 
 @pytest.mark.parametrize("code", [429, 500, 503, 504])
-def test_busy_answers_are_retried(code):
-    models = FakeModels(answers=[api_error(code), answer("roof")])
-    result = analyzer_with(models, retries=2).analyze(b"%PDF-", "application/pdf", 1)
-    assert result.measurements[0].element_type == "roof"
-    assert models.models == ["gemini-test", "gemini-test"]
-
-
-def test_busy_after_all_retries():
-    models = FakeModels(error=api_error(503))
-    with pytest.raises(AnalyzerBusyError, match="answered 503"):
-        analyzer_with(models, retries=2).analyze(b"%PDF-", "application/pdf", 1)
-    assert models.models == ["gemini-test"] * 3
-
-
-def test_waits_longer_before_each_retry():
-    waits = []
-    analyzer = GeminiAnalyzer("key", "gemini-test", retries=2, retry_delay=1.5, sleep=waits.append)
-    analyzer._client = SimpleNamespace(models=FakeModels(error=api_error(503)))
-    with pytest.raises(AnalyzerBusyError):
-        analyzer.analyze(b"%PDF-", "application/pdf", 1)
-    assert waits == [1.5, 3.0]
+def test_busy_answers_raise_the_busy_error(code):
+    with pytest.raises(AnalyzerBusyError, match=f"answered {code}"):
+        analyzer_with(FakeModels(error=api_error(code))).analyze(b"%PDF-", "application/pdf", 1)
 
 
 def test_parse_answer_reads_the_text_when_not_parsed():
@@ -114,30 +96,3 @@ def test_parse_answer_rejects_invalid_json():
         parse_answer(None, "not json")
     with pytest.raises(AnalyzerError):
         parse_answer(None, None)
-
-
-def test_tries_the_fallback_model_when_the_main_one_stays_busy():
-    models = FakeModels(answers=[api_error(503), api_error(503), answer("roof")])
-    result = analyzer_with(models, fallback_model="gemini-lite", retries=1).analyze(b"%PDF-", "application/pdf", 1)
-    assert result.measurements[0].element_type == "roof"
-    assert models.models == ["gemini-test", "gemini-test", "gemini-lite"]
-    assert result.warnings == ["The backup model gemini-lite read this blueprint because gemini-test was busy"]
-
-
-def test_no_warning_when_the_main_model_answers():
-    result = analyzer_with(FakeModels(answer()), fallback_model="gemini-lite").analyze(b"%PDF-", "application/pdf", 1)
-    assert result.warnings == []
-
-
-def test_busy_when_the_fallback_model_is_busy_too():
-    models = FakeModels(error=api_error(429))
-    with pytest.raises(AnalyzerBusyError, match="answered 429"):
-        analyzer_with(models, fallback_model="gemini-lite", retries=1).analyze(b"%PDF-", "application/pdf", 1)
-    assert models.models == ["gemini-test", "gemini-test", "gemini-lite", "gemini-lite"]
-
-
-def test_fallback_equal_to_the_main_model_is_not_tried_twice():
-    models = FakeModels(error=api_error(503))
-    with pytest.raises(AnalyzerBusyError):
-        analyzer_with(models, fallback_model="gemini-test").analyze(b"%PDF-", "application/pdf", 1)
-    assert models.models == ["gemini-test"]

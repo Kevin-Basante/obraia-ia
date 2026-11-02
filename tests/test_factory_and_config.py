@@ -3,6 +3,7 @@ import os
 from app import config
 from app.analyzers import factory
 from app.analyzers.fake import FakeAnalyzer
+from app.analyzers.fallback import FallbackAnalyzer
 from app.analyzers.gemini import GeminiAnalyzer
 
 
@@ -60,7 +61,9 @@ def test_factory_picks_fake(monkeypatch):
 def test_factory_picks_gemini_by_default(monkeypatch):
     reload(monkeypatch, GEMINI_API_KEY="key")
     analyzer = factory.get_analyzer()
-    assert isinstance(analyzer, GeminiAnalyzer)
+    assert isinstance(analyzer, FallbackAnalyzer)
+    assert isinstance(analyzer.main.inner, GeminiAnalyzer)
+    assert analyzer.model_name == config.DEFAULT_MODEL
     assert analyzer.ready()
 
 
@@ -78,8 +81,9 @@ def test_dotenv_does_not_override_real_variables(monkeypatch, tmp_path):
 def test_factory_passes_the_fallback_model_and_retries(monkeypatch):
     reload(monkeypatch, GEMINI_API_KEY="key", GEMINI_FALLBACK_MODEL="backup-model", GEMINI_RETRIES="1")
     analyzer = factory.get_analyzer()
-    assert analyzer.fallback_model == "backup-model"
-    assert analyzer.retries == 1
+    assert analyzer.backup.model_name == "backup-model"
+    assert analyzer.main.retries == 1
+    assert analyzer.backup.retries == 1
 
 
 def test_reads_the_pdf_page_limit(monkeypatch):
