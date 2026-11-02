@@ -1,5 +1,6 @@
 from app.analyzers.base import AnalyzerBusyError, AnalyzerError
 from app.analyzers.factory import get_analyzer
+from app.limiter import AnalysisLimiter, get_limiter
 from app.main import app
 from app.schemas import RawAnalysis, RawMeasurement
 from tests.conftest import PDF_BYTES, auth
@@ -197,3 +198,22 @@ def test_answer_has_totals_per_element(client):
     assert list(summary) == ["foundation", "slab", "wall", "roof"]
     assert summary["wall"] == {"element_type": "wall", "rows": 1, "pieces": 1, "total": 86.4, "unit": "m2"}
     assert summary["slab"]["unit"] == "m3"
+
+
+def test_refuses_as_busy_when_every_slot_is_taken(client):
+    full = AnalysisLimiter(1)
+    full.try_acquire()
+    app.dependency_overrides[get_limiter] = lambda: full
+    analyzer = use(StubAnalyzer(mixed_answer()))
+    response = analyze(client)
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "ANALYZER_BUSY"
+    assert analyzer.calls == []
+
+
+def test_the_slot_is_freed_after_the_analysis(client):
+    limiter = AnalysisLimiter(1)
+    app.dependency_overrides[get_limiter] = lambda: limiter
+    assert analyze(client).status_code == 200
+    assert analyze(client).status_code == 200
+    assert limiter.in_use == 0
