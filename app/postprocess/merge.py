@@ -26,7 +26,7 @@ class MergeDuplicates:
 
 
 def _join_notes(first: str | None, second: str | None) -> str | None:
-    if not second or second == first:
+    if not second or (first and second in first.split("; ")):
         return first
     if not first:
         return second
