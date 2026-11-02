@@ -16,6 +16,10 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
+      - name: Check the style
+        run: |
+          ruff check .
+          ruff format --check .
       - name: Run the tests with coverage
         run: pytest --cov --cov-report=term
         env:
