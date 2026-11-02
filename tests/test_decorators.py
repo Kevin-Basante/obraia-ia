@@ -47,3 +47,32 @@ def test_tries_again_while_busy():
     inner = ScriptedAnalyzer(AnalyzerBusyError("busy"), result("roof"))
     assert retrying(inner).analyze(b"", "application/pdf", 1).measurements[0].element_type == "roof"
     assert inner.calls == 2
+
+
+def test_waits_twice_as_long_each_time():
+    waits = []
+    inner = ScriptedAnalyzer(AnalyzerBusyError("busy"))
+    with pytest.raises(AnalyzerBusyError):
+        retrying(inner, retries=3, waits=waits).analyze(b"", "application/pdf", 1)
+    assert waits == [1.0, 2.0, 4.0]
+    assert inner.calls == 4
+
+
+def test_other_errors_are_not_repeated():
+    inner = ScriptedAnalyzer(AnalyzerError("bad file"), result())
+    with pytest.raises(AnalyzerError, match="bad file"):
+        retrying(inner).analyze(b"", "application/pdf", 1)
+    assert inner.calls == 1
+
+
+def test_zero_retries_calls_once():
+    inner = ScriptedAnalyzer(AnalyzerBusyError("busy"))
+    with pytest.raises(AnalyzerBusyError):
+        retrying(inner, retries=0).analyze(b"", "application/pdf", 1)
+    assert inner.calls == 1
+
+
+def test_retrying_shows_the_inner_model_and_readiness():
+    analyzer = retrying(ScriptedAnalyzer(result(), model_name="m1", ready=False))
+    assert analyzer.model_name == "m1"
+    assert analyzer.ready() is False
