@@ -174,8 +174,17 @@ En el backend, el **Adapter** (`AiServiceAdapter`) traduce las respuestas de est
 
 ```text
 app/
+├── __init__.py          # Versión del servicio
 ├── main.py              # Crea la aplicación y registra las rutas
 ├── config.py            # Variables de entorno
+├── middleware.py        # Request ID y log de accesos
+├── request_id.py        # Código de cada petición
+├── logging_setup.py     # Formato de los logs
+├── limiter.py           # Análisis al mismo tiempo
+├── pdf_pages.py         # Cuenta las páginas de un PDF
+├── quantities.py        # Volumen o superficie de cada medida
+├── summary.py           # Totales por elemento
+├── uptime.py            # Tiempo encendido
 ├── errors.py            # Errores con la forma { error: { code, message } }
 ├── security.py          # Revisa el encabezado X-Service-Token
 ├── elements.py          # Tipos de elemento y medidas que necesita cada uno
@@ -185,13 +194,22 @@ app/
 ├── cleaning.py          # Revisa y limpia las medidas del modelo
 ├── analyzers/
 │   ├── base.py          # Interfaz BlueprintAnalyzer (Strategy)
-│   ├── gemini.py        # Lee el plano con Gemini
+│   ├── gemini.py        # Lee el plano con Gemini (una llamada)
+│   ├── retrying.py      # Decorador: reintentos
+│   ├── fallback.py      # Decorador: modelo de respaldo
 │   ├── fake.py          # Medidas de ejemplo, sin IA
-│   └── factory.py       # Elige el analizador
+│   └── factory.py       # Elige el analizador y lo envuelve
+├── postprocess/
+│   ├── base.py          # Pipeline y Report
+│   ├── merge.py         # Une filas repetidas
+│   ├── plausibility.py  # Advierte medidas raras
+│   └── sorting.py       # Ordena por piso y elemento
 └── routers/
     ├── health.py        # GET /health
-    └── analysis.py      # POST /api/v1/blueprints/analyze
+    ├── analysis.py      # POST /api/v1/blueprints/analyze
+    └── elements.py      # GET /api/v1/elements
 tests/                   # Pruebas con pytest (Gemini simulado)
+.github/workflows/       # Pruebas automáticas en GitHub Actions
 ```
 
 ## Despliegue en Render
