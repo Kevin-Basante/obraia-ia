@@ -32,6 +32,8 @@ class Settings:
     gemini_fallback_model: model tried when the main one stays busy; empty turns it off.
     gemini_retries: extra tries of each model when Gemini answers that it is busy.
     max_pdf_pages: longest PDF accepted; a house blueprint rarely needs more pages.
+    max_concurrent_analyses: analyses running at the same time; more are refused as busy
+    (the free plan of Render has little memory).
     """
 
     analyzer: str
@@ -42,6 +44,7 @@ class Settings:
     gemini_fallback_model: str = DEFAULT_FALLBACK_MODEL
     gemini_retries: int = 2
     max_pdf_pages: int = 10
+    max_concurrent_analyses: int = 2
 
     @property
     def max_file_bytes(self) -> int:
@@ -60,4 +63,5 @@ def get_settings() -> Settings:
         gemini_fallback_model=os.environ.get("GEMINI_FALLBACK_MODEL", DEFAULT_FALLBACK_MODEL).strip(),
         gemini_retries=max(0, int(os.environ.get("GEMINI_RETRIES", "2"))),
         max_pdf_pages=max(1, int(os.environ.get("MAX_PDF_PAGES", "10"))),
+        max_concurrent_analyses=max(1, int(os.environ.get("MAX_CONCURRENT_ANALYSES", "2"))),
     )

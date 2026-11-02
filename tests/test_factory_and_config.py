@@ -10,7 +10,7 @@ from app.analyzers.retrying import RetryingAnalyzer
 
 def reload(monkeypatch, **env):
     for key in ("ANALYZER", "GEMINI_API_KEY", "GEMINI_MODEL", "SERVICE_TOKEN", "MAX_FILE_MB",
-                "GEMINI_FALLBACK_MODEL", "GEMINI_RETRIES", "MAX_PDF_PAGES"):
+                "GEMINI_FALLBACK_MODEL", "GEMINI_RETRIES", "MAX_PDF_PAGES", "MAX_CONCURRENT_ANALYSES"):
         monkeypatch.delenv(key, raising=False)
     for key, value in env.items():
         monkeypatch.setenv(key, value)
@@ -29,6 +29,7 @@ def test_defaults(monkeypatch):
     assert settings.gemini_fallback_model == config.DEFAULT_FALLBACK_MODEL
     assert settings.gemini_retries == 2
     assert settings.max_pdf_pages == 10
+    assert settings.max_concurrent_analyses == 2
 
 
 def test_reads_environment(monkeypatch):
