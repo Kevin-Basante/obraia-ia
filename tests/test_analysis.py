@@ -56,7 +56,7 @@ def test_returns_the_fake_measurements(client):
     body = response.json()
     assert body["model"] == "fake"
     assert body["discarded"] == 0
-    assert [m["element_type"] for m in body["measurements"]] == ["wall", "foundation", "slab", "roof"]
+    assert [m["element_type"] for m in body["measurements"]] == ["foundation", "slab", "wall", "roof"]
     assert body["warnings"]
 
 

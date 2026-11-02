@@ -13,6 +13,7 @@ from app.config import Settings, get_settings
 from app.errors import ServiceError
 from app.file_types import PDF, detect_mime_type
 from app.pdf_pages import count_pdf_pages
+from app.postprocess.base import default_pipeline
 from app.schemas import AnalysisResponse, ErrorResponse
 from app.security import require_service_token
 
@@ -65,10 +66,12 @@ async def analyze_blueprint(
         logger.error("Analysis of %s failed: %s", file.filename, ex)
         raise ServiceError(502, "ANALYZER_FAILED", str(ex)) from ex
     measurements, discarded = clean_measurements(raw.measurements, floors)
+    measurements, report = default_pipeline().run(measurements)
     return AnalysisResponse(
         measurements=measurements,
-        warnings=raw.warnings,
+        warnings=[*raw.warnings, *report.warnings],
         discarded=discarded,
+        merged=report.merged,
         model=analyzer.model_name,
         elapsed_ms=int((time.monotonic() - started) * 1000),
     )
