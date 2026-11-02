@@ -189,3 +189,11 @@ def test_unusual_sizes_add_a_warning(client):
     body = analyze(client).json()
     assert body["warnings"][0] == "Escala no visible"
     assert "height of 9 m is unusual" in body["warnings"][1]
+
+
+def test_answer_has_totals_per_element(client):
+    body = analyze(client).json()
+    summary = {line["element_type"]: line for line in body["summary"]}
+    assert list(summary) == ["foundation", "slab", "wall", "roof"]
+    assert summary["wall"] == {"element_type": "wall", "rows": 1, "pieces": 1, "total": 86.4, "unit": "m2"}
+    assert summary["slab"]["unit"] == "m3"
