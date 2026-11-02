@@ -93,3 +93,32 @@ def test_backup_reads_when_the_main_one_is_busy():
     answer = FallbackAnalyzer(main, backup).analyze(b"", "application/pdf", 1)
     assert answer.measurements[0].element_type == "roof"
     assert answer.warnings == ["The backup model lite read this blueprint because main-model was busy"]
+
+
+def test_busy_when_the_backup_is_busy_too():
+    main = ScriptedAnalyzer(AnalyzerBusyError("busy"))
+    backup = ScriptedAnalyzer(AnalyzerBusyError("busy too"), model_name="lite")
+    with pytest.raises(AnalyzerBusyError, match="busy too"):
+        FallbackAnalyzer(main, backup).analyze(b"", "application/pdf", 1)
+
+
+def test_backup_is_not_used_for_other_errors():
+    backup = ScriptedAnalyzer(result(), model_name="lite")
+    with pytest.raises(AnalyzerError):
+        FallbackAnalyzer(ScriptedAnalyzer(AnalyzerError("bad file")), backup).analyze(b"", "application/pdf", 1)
+    assert backup.calls == 0
+
+
+def test_fallback_shows_the_main_model_and_readiness():
+    analyzer = FallbackAnalyzer(ScriptedAnalyzer(result(), ready=False), ScriptedAnalyzer(result(), model_name="lite"))
+    assert analyzer.model_name == "main-model"
+    assert analyzer.ready() is False
+
+
+def test_decorators_stack():
+    main = ScriptedAnalyzer(AnalyzerBusyError("busy"))
+    backup = ScriptedAnalyzer(AnalyzerBusyError("busy"), result("roof"), model_name="lite")
+    analyzer = FallbackAnalyzer(retrying(main, retries=1), retrying(backup, retries=1))
+    answer = analyzer.analyze(b"", "application/pdf", 1)
+    assert answer.measurements[0].element_type == "roof"
+    assert (main.calls, backup.calls) == (2, 2)
