@@ -38,3 +38,11 @@ def test_wrong_method_answers_method_not_allowed(client):
     assert response.status_code == 405
     assert response.json()["error"]["code"] == "METHOD_NOT_ALLOWED"
     assert "POST" in response.headers["allow"]
+
+
+def test_validation_errors_name_the_fields(client):
+    response = client.post(
+        "/api/v1/blueprints/analyze", files={"file": ("plan.pdf", PDF_BYTES)}, data={"floors": "5"}, headers=auth()
+    )
+    assert response.status_code == 400
+    assert response.json() == {"error": {"code": "VALIDATION_ERROR", "message": "Invalid fields: floors"}}
