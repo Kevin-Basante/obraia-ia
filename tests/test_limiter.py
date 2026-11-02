@@ -38,3 +38,16 @@ def test_slot_refuses_as_busy_when_full():
     with pytest.raises(ServiceError) as raised, limiter.slot():
         pass
     assert (raised.value.status, raised.value.code) == (503, "ANALYZER_BUSY")
+
+
+def test_limiter_uses_the_setting(monkeypatch):
+    from app import config, limiter
+    from tests.conftest import make_settings
+
+    monkeypatch.setattr(limiter, "get_settings", lambda: make_settings(max_concurrent_analyses=3))
+    limiter.get_limiter.cache_clear()
+    try:
+        assert limiter.get_limiter().slots == 3
+    finally:
+        limiter.get_limiter.cache_clear()
+        config.get_settings.cache_clear()
