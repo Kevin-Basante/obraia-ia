@@ -54,3 +54,24 @@ def test_keeps_rows_of_other_floors_or_sizes():
     result, report = merge([wall(), wall(floor=2), wall(length=4)])
     assert len(result) == 3
     assert report.merged == 0
+
+
+def test_joins_different_notes_once():
+    result, _ = merge([wall(notes="Fachada"), wall(notes="Patio"), wall(notes="Patio")])
+    assert result[0].notes == "Fachada; Patio"
+
+
+def test_keeps_the_note_when_only_one_row_has_it():
+    result, _ = merge([wall(), wall(notes="Patio")])
+    assert result[0].notes == "Patio"
+
+
+def test_quantity_never_goes_over_the_limit():
+    result, _ = merge([wall(quantity=900), wall(quantity=900)])
+    assert result[0].quantity == 1000
+
+
+def test_merge_does_not_change_the_original_rows():
+    first = wall(quantity=2)
+    merge([first, wall()])
+    assert first.quantity == 2
