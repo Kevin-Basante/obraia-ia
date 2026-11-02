@@ -25,3 +25,16 @@ def test_unexpected_errors_keep_the_error_shape(client, caplog):
     assert response.json() == {"error": {"code": "INTERNAL_ERROR", "message": "Unexpected error in the AI service"}}
     assert "secret detail" not in response.text
     assert any("Unexpected error" in line for line in caplog.messages)
+
+
+def test_unknown_routes_answer_not_found(client):
+    response = client.get("/api/v1/nothing")
+    assert response.status_code == 404
+    assert response.json() == {"error": {"code": "NOT_FOUND", "message": "Not Found"}}
+
+
+def test_wrong_method_answers_method_not_allowed(client):
+    response = client.get("/api/v1/blueprints/analyze", headers=auth())
+    assert response.status_code == 405
+    assert response.json()["error"]["code"] == "METHOD_NOT_ALLOWED"
+    assert "POST" in response.headers["allow"]
