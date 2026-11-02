@@ -96,6 +96,12 @@ La documentación interactiva (Swagger) queda en `http://localhost:8000/docs`.
 | GET    | `/api/v1/elements`            | Sí    | Tipos de elemento, medidas que necesita cada uno y su unidad |
 | GET    | `/docs`                       | No    | Documentación Swagger                                |
 
+`GET /health` responde:
+
+```json
+{ "status": "UP", "analyzer": "gemini", "model": "gemini-3.5-flash", "ready": true, "version": "1.0.0", "uptime_seconds": 532 }
+```
+
 `POST /api/v1/blueprints/analyze` recibe un formulario `multipart/form-data`:
 
 | Campo    | Tipo    | Descripción                                   |
