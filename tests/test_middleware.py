@@ -30,3 +30,15 @@ def test_analysis_answers_carry_the_request_id(client):
     )
     assert response.status_code == 200
     assert response.headers["X-Request-ID"] == "analysis-1"
+
+
+def test_requests_are_written_to_the_access_log(client, caplog):
+    caplog.set_level("INFO", logger="app.access")
+    client.get("/openapi.json")
+    assert any("GET /openapi.json -> 200" in line for line in caplog.messages)
+
+
+def test_health_checks_are_not_logged(client, caplog):
+    caplog.set_level("INFO", logger="app.access")
+    client.get("/health")
+    assert [item for item in caplog.records if item.name == "app.access"] == []
