@@ -1,1 +1,3 @@
-"""ObraIA AI service: reads construction blueprints and returns their measurements."""
+"""ObraIA AI service."""
+
+__version__ = "1.0.0"

@@ -4,6 +4,7 @@ import logging
 
 from fastapi import FastAPI
 
+from app import __version__
 from app.errors import register_error_handlers
 from app.routers import analysis, health
 
@@ -13,7 +14,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(messag
 app = FastAPI(
     title="ObraIA AI service",
     description="Reads construction blueprints with a vision model and returns the measurements of each element.",
-    version="0.1.0",
+    version=__version__,
     docs_url="/docs",
 )
 register_error_handlers(app)
