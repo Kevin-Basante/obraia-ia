@@ -58,6 +58,14 @@ class AnalysisResponse(BaseModel):
     elapsed_ms: int
 
 
+class ElementInfo(BaseModel):
+    """An element the service can measure and the dimensions it needs."""
+
+    element_type: ElementType
+    required_dimensions: list[str]
+    unit: str
+
+
 class HealthResponse(BaseModel):
     """Answer of GET /health."""
 
