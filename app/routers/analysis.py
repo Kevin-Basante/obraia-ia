@@ -11,7 +11,8 @@ from app.analyzers.factory import get_analyzer
 from app.cleaning import clean_measurements
 from app.config import Settings, get_settings
 from app.errors import ServiceError
-from app.file_types import detect_mime_type
+from app.file_types import PDF, detect_mime_type
+from app.pdf_pages import count_pdf_pages
 from app.schemas import AnalysisResponse, ErrorResponse
 from app.security import require_service_token
 
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/api/v1/blueprints", tags=["Blueprints"], dependencie
     "/analyze",
     response_model=AnalysisResponse,
     responses={
-        400: {"model": ErrorResponse, "description": "The file is empty or not a PDF or image"},
+        400: {"model": ErrorResponse, "description": "The file is empty, not a PDF or image, or has too many pages"},
         401: {"model": ErrorResponse, "description": "Missing or wrong X-Service-Token"},
         413: {"model": ErrorResponse, "description": "The file is too large"},
         502: {"model": ErrorResponse, "description": "The model failed or its answer was not valid"},
@@ -46,6 +47,10 @@ async def analyze_blueprint(
     mime_type = detect_mime_type(content)
     if mime_type is None:
         raise ServiceError(400, "UNSUPPORTED_FILE", "Only PDF, PNG, JPG and WEBP files can be analyzed")
+    if mime_type == PDF and count_pdf_pages(content) > settings.max_pdf_pages:
+        raise ServiceError(
+            400, "PDF_TOO_MANY_PAGES", f"The PDF has more than {settings.max_pdf_pages} pages; upload only the plans"
+        )
     if not analyzer.ready():
         raise ServiceError(503, "ANALYZER_NOT_READY", "The analyzer has no API key")
 
