@@ -266,6 +266,13 @@ tests/                   # Pruebas con pytest (Gemini simulado)
 
 El plan gratuito de Render apaga el servicio tras 15 minutos sin uso; la primera llamada después puede tardar cerca de un minuto mientras arranca.
 
+## Versiones
+
+| Versión | Qué trae                                                                                   |
+| ------- | ------------------------------------------------------------------------------------------ |
+| 0.1.0   | Lectura de planos con Gemini, limpieza de medidas, reintentos y modelo de respaldo          |
+| 1.0.0   | Decoradores, request ID y logs, límites de páginas y de análisis, unión de filas, advertencias de medidas raras, totales por elemento, ruta de elementos, CI |
+
 ## Equipo y responsabilidades
 
 | Integrante    | Responsabilidad                                                    |
