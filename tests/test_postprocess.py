@@ -4,6 +4,7 @@ from app.elements import ElementType
 from app.postprocess.base import Pipeline, Report
 from app.postprocess.merge import MergeDuplicates
 from app.postprocess.plausibility import PlausibilityCheck
+from app.postprocess.sorting import SortByFloorAndElement
 from app.schemas import ElementMeasurement
 
 
@@ -107,3 +108,23 @@ def test_every_element_has_plausible_maximums_for_its_dimensions():
 
     for element, dimensions in REQUIRED_DIMENSIONS.items():
         assert set(PLAUSIBLE_MAXIMUMS[element]) == set(dimensions)
+
+
+def roof(floor=1) -> ElementMeasurement:
+    return ElementMeasurement(element_type=ElementType.ROOF, floor_number=floor, length_m=9, width_m=8)
+
+
+def test_sorts_by_floor_then_build_order():
+    items = [roof(2), wall(floor=2), roof(1), wall(length=5)]
+    result = SortByFloorAndElement().apply(items, Report())
+    assert [(item.floor_number, item.element_type.value) for item in result] == [
+        (1, "wall"),
+        (1, "roof"),
+        (2, "wall"),
+        (2, "roof"),
+    ]
+
+
+def test_sorting_keeps_the_model_order_inside_a_group():
+    result = SortByFloorAndElement().apply([wall(length=7), wall(length=2)], Report())
+    assert [item.length_m for item in result] == [7, 2]
