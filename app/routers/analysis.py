@@ -16,6 +16,7 @@ from app.pdf_pages import count_pdf_pages
 from app.postprocess.base import default_pipeline
 from app.schemas import AnalysisResponse, ErrorResponse
 from app.security import require_service_token
+from app.summary import summarize
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,7 @@ async def analyze_blueprint(
         warnings=[*raw.warnings, *report.warnings],
         discarded=discarded,
         merged=report.merged,
+        summary=summarize(measurements),
         model=analyzer.model_name,
         elapsed_ms=int((time.monotonic() - started) * 1000),
     )

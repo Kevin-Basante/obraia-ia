@@ -53,6 +53,7 @@ class AnalysisResponse(BaseModel):
     warnings: list[str]
     discarded: int = Field(description="Elements the model returned that were not valid")
     merged: int = Field(default=0, description="Repeated rows joined into one")
+    summary: list[ElementSummary] = Field(default=[], description="Totals per element type")
     model: str
     elapsed_ms: int
 
