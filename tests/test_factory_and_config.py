@@ -9,8 +9,17 @@ from app.analyzers.retrying import RetryingAnalyzer
 
 
 def reload(monkeypatch, **env):
-    for key in ("ANALYZER", "GEMINI_API_KEY", "GEMINI_MODEL", "SERVICE_TOKEN", "MAX_FILE_MB",
-                "GEMINI_FALLBACK_MODEL", "GEMINI_RETRIES", "MAX_PDF_PAGES", "MAX_CONCURRENT_ANALYSES"):
+    for key in (
+        "ANALYZER",
+        "GEMINI_API_KEY",
+        "GEMINI_MODEL",
+        "SERVICE_TOKEN",
+        "MAX_FILE_MB",
+        "GEMINI_FALLBACK_MODEL",
+        "GEMINI_RETRIES",
+        "MAX_PDF_PAGES",
+        "MAX_CONCURRENT_ANALYSES",
+    ):
         monkeypatch.delenv(key, raising=False)
     for key, value in env.items():
         monkeypatch.setenv(key, value)

@@ -11,7 +11,15 @@ def item(element, quantity=1, **dims) -> ElementMeasurement:
 
 @pytest.mark.parametrize(
     ("element", "unit"),
-    [("foundation", "m3"), ("column", "m3"), ("beam", "m3"), ("slab", "m3"), ("wall", "m2"), ("floor", "m2"), ("roof", "m2")],
+    [
+        ("foundation", "m3"),
+        ("column", "m3"),
+        ("beam", "m3"),
+        ("slab", "m3"),
+        ("wall", "m2"),
+        ("floor", "m2"),
+        ("roof", "m2"),
+    ],
 )
 def test_units(element, unit):
     assert unit_of(ElementType(element)) == unit

@@ -18,7 +18,7 @@ _ALIASES = {
 
 
 def parse_element(value: str) -> ElementType | None:
-    """"Walls", " wall " and "WALL" all become ElementType.WALL; unknown names give None."""
+    """ "Walls", " wall " and "WALL" all become ElementType.WALL; unknown names give None."""
     key = value.strip().lower()
     try:
         return ElementType(key)

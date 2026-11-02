@@ -10,7 +10,12 @@ from app.schemas import ElementMeasurement
 
 def wall(length=3.0, height=2.4, floor=1, quantity=1, notes=None) -> ElementMeasurement:
     return ElementMeasurement(
-        element_type=ElementType.WALL, floor_number=floor, length_m=length, height_m=height, quantity=quantity, notes=notes
+        element_type=ElementType.WALL,
+        floor_number=floor,
+        length_m=length,
+        height_m=height,
+        quantity=quantity,
+        notes=notes,
     )
 
 
