@@ -127,13 +127,17 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
 | ----------- | ----------------------- | ----------------------------------------------- |
 | 400         | `EMPTY_FILE`            | El archivo está vacío                           |
 | 400         | `UNSUPPORTED_FILE`      | No es PDF, PNG, JPG ni WEBP                     |
+| 400         | `PDF_TOO_MANY_PAGES`    | El PDF tiene más páginas que `MAX_PDF_PAGES`     |
 | 400         | `VALIDATION_ERROR`      | Falta el archivo o `floors` no es 1 o 2         |
 | 401         | `INVALID_SERVICE_TOKEN` | Falta `X-Service-Token` o no coincide           |
 | 413         | `FILE_TOO_LARGE`        | El plano pasa de `MAX_FILE_MB`                  |
 | 502         | `ANALYZER_FAILED`       | Gemini rechazó la petición o su respuesta no se pudo leer |
 | 503         | `ANALYZER_NOT_READY`    | Falta `GEMINI_API_KEY`                          |
 | 503         | `SERVICE_NOT_CONFIGURED`| Falta `SERVICE_TOKEN` en el servidor            |
-| 503         | `ANALYZER_BUSY`         | Gemini sigue saturado después de los reintentos y del modelo de respaldo; se puede intentar más tarde |
+| 503         | `ANALYZER_BUSY`         | Gemini sigue saturado después de los reintentos y del modelo de respaldo, o ya hay `MAX_CONCURRENT_ANALYSES` análisis en curso; se puede intentar más tarde |
+| 404         | `NOT_FOUND`             | La ruta no existe                               |
+| 405         | `METHOD_NOT_ALLOWED`    | La ruta existe pero no con ese método           |
+| 500         | `INTERNAL_ERROR`        | Error inesperado; el detalle solo queda en los logs |
 
 ## Cómo se lee un plano
 
