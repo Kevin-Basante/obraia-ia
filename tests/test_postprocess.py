@@ -100,3 +100,10 @@ def test_one_warning_per_strange_dimension():
     _, report = check([slab])
     assert len(report.warnings) == 2
     assert all("slab on floor 2" in warning for warning in report.warnings)
+
+
+def test_every_element_has_plausible_maximums_for_its_dimensions():
+    from app.elements import PLAUSIBLE_MAXIMUMS, REQUIRED_DIMENSIONS
+
+    for element, dimensions in REQUIRED_DIMENSIONS.items():
+        assert set(PLAUSIBLE_MAXIMUMS[element]) == set(dimensions)
