@@ -141,10 +141,11 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
 
 ## Cómo se lee un plano
 
-1. **Tipo de archivo:** se reconoce por sus primeros bytes, no por el nombre, así que un `.pdf` falso se rechaza.
+1. **Tipo de archivo:** se reconoce por sus primeros bytes, no por el nombre, así que un `.pdf` falso se rechaza. Un PDF con más de `MAX_PDF_PAGES` páginas también se rechaza.
 2. **Modelo:** el plano y unas instrucciones (`app/prompt.py`) se envían a Gemini, que responde en JSON con la forma de `RawAnalysis`. La temperatura es 0 para que el mismo plano dé el mismo resultado.
-   - Si Gemini responde que está saturado (429, 500, 503 o 504), se reintenta hasta `GEMINI_RETRIES` veces, esperando 2 s, luego 4 s.
-   - Si el modelo principal sigue saturado, se prueba `GEMINI_FALLBACK_MODEL`, y la respuesta trae una advertencia que lo dice.
+   - `GeminiAnalyzer` hace una sola llamada. Los reintentos y el modelo de respaldo se agregan alrededor con decoradores (`app/analyzers/retrying.py` y `fallback.py`), armados en `factory.py`.
+   - Si Gemini responde que está saturado (429, 500, 503 o 504), `RetryingAnalyzer` reintenta hasta `GEMINI_RETRIES` veces, esperando 2 s, luego 4 s.
+   - Si el modelo principal sigue saturado, `FallbackAnalyzer` prueba `GEMINI_FALLBACK_MODEL`, y la respuesta trae una advertencia que lo dice.
    - Si los dos siguen saturados, se responde `503 ANALYZER_BUSY`. Cada intento queda en los logs de Render.
 3. **Limpieza** (`app/cleaning.py`): cada elemento se revisa antes de devolverlo.
    - Solo se aceptan los 7 tipos del backend (también en plural, como `walls`).
