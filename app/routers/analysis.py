@@ -12,6 +12,7 @@ from app.cleaning import clean_measurements
 from app.config import Settings, get_settings
 from app.errors import ServiceError
 from app.file_types import PDF, detect_mime_type
+from app.limiter import AnalysisLimiter, get_limiter
 from app.pdf_pages import count_pdf_pages
 from app.postprocess.base import default_pipeline
 from app.schemas import AnalysisResponse, ErrorResponse
@@ -39,6 +40,7 @@ async def analyze_blueprint(
     floors: int = Form(default=1, ge=1, le=2, description="Floors of the project"),
     settings: Settings = Depends(get_settings),
     analyzer: BlueprintAnalyzer = Depends(get_analyzer),
+    limiter: AnalysisLimiter = Depends(get_limiter),
 ) -> AnalysisResponse:
     """Measurements of the elements drawn in the blueprint, ready to save in the backend."""
     content = await file.read()
@@ -58,8 +60,9 @@ async def analyze_blueprint(
 
     started = time.monotonic()
     try:
-        # The SDK call blocks, so it runs outside the event loop.
-        raw = await run_in_threadpool(analyzer.analyze, content, mime_type, floors)
+        with limiter.slot():
+            # The SDK call blocks, so it runs outside the event loop.
+            raw = await run_in_threadpool(analyzer.analyze, content, mime_type, floors)
     except AnalyzerBusyError as ex:
         logger.warning("Analysis of %s refused, the model is busy: %s", file.filename, ex)
         raise ServiceError(503, "ANALYZER_BUSY", str(ex)) from ex

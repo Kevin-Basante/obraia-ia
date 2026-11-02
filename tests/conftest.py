@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from app.analyzers.factory import get_analyzer
 from app.analyzers.fake import FakeAnalyzer
 from app.config import Settings, get_settings
+from app.limiter import AnalysisLimiter, get_limiter
 from app.main import app
 
 TOKEN = "test-token"
@@ -40,6 +41,7 @@ def analyzer():
 def client(settings, analyzer):
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[get_analyzer] = lambda: analyzer
+    app.dependency_overrides[get_limiter] = lambda: AnalysisLimiter(2)
     yield TestClient(app)
     app.dependency_overrides.clear()
 
