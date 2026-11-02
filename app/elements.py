@@ -1,9 +1,9 @@
 """Building elements the service measures. They match the element types of the backend."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class ElementType(str, Enum):
+class ElementType(StrEnum):
     FOUNDATION = "foundation"
     COLUMN = "column"
     BEAM = "beam"
