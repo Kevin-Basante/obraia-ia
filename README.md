@@ -163,6 +163,8 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
 | ------------------ | --------------------------------------- | ---------------------------------------------------------------- |
 | Strategy           | `app/analyzers/` (`BlueprintAnalyzer`)  | Cambiar entre Gemini y el analizador de ejemplo sin tocar la ruta |
 | Factory            | `app/analyzers/factory.py`              | Crear el analizador que dice `ANALYZER`                          |
+| Decorator          | `app/analyzers/retrying.py`, `fallback.py` | Agregar reintentos y modelo de respaldo sin cambiar `GeminiAnalyzer` |
+| Chain of Responsibility | `app/postprocess/` (`Pipeline`)    | Pasar las medidas por varios pasos; agregar uno no cambia los demás |
 | Inyección de dependencias | `Depends` de FastAPI             | Las pruebas reemplazan el analizador y la configuración          |
 | DTO                | `app/schemas.py`                        | Formas de los datos que entran y salen del servicio              |
 
