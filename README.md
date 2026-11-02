@@ -185,6 +185,23 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
 
 En el backend, el **Adapter** (`AiServiceAdapter`) traduce las respuestas de este servicio al dominio de Java y el **Proxy** (`AiServiceProxy`) controla el acceso, guarda en caché los análisis y limita cuántos se hacen por obra.
 
+## Pruebas
+
+- 151 pruebas con pytest; ninguna llama a Gemini (se usan analizadores simulados).
+- Cobertura cercana al 100 % de las líneas de `app/` (`pytest --cov`).
+- GitHub Actions (`.github/workflows/tests.yml`) revisa el estilo con ruff y corre las pruebas en cada push a `main`.
+
+| Archivo                     | Qué prueba                                         |
+| --------------------------- | -------------------------------------------------- |
+| `test_analysis.py`          | La ruta de análisis, sus errores y límites          |
+| `test_gemini.py`            | La llamada a Gemini y la lectura de su respuesta    |
+| `test_decorators.py`        | Reintentos y modelo de respaldo                     |
+| `test_cleaning.py`          | Limpieza de las medidas                             |
+| `test_postprocess.py`       | Unión de filas, medidas raras y orden               |
+| `test_quantities.py`, `test_summary.py` | Volúmenes, superficies y totales        |
+| `test_middleware.py`, `test_request_id.py`, `test_logging_setup.py` | Request ID y logs |
+| `test_errors.py`            | Forma de los errores 400, 404, 405 y 500            |
+
 ## Estructura
 
 ```text
