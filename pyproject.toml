@@ -16,3 +16,11 @@ target-version = "py311"
 select = ["E", "F", "I", "UP", "B"]
 # FastAPI declares dependencies with Depends() and File() in the arguments.
 ignore = ["B008"]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
