@@ -51,6 +51,8 @@ class HealthResponse(BaseModel):
     analyzer: str
     model: str
     ready: bool
+    version: str
+    uptime_seconds: int
 
 
 class ErrorBody(BaseModel):

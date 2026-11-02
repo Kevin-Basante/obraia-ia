@@ -2,10 +2,12 @@
 
 from fastapi import APIRouter, Depends
 
+from app import __version__
 from app.analyzers.base import BlueprintAnalyzer
 from app.analyzers.factory import get_analyzer
 from app.config import Settings, get_settings
 from app.schemas import HealthResponse
+from app.uptime import uptime_seconds
 
 router = APIRouter(tags=["Health"])
 
@@ -16,4 +18,11 @@ def health(
     analyzer: BlueprintAnalyzer = Depends(get_analyzer),
 ) -> HealthResponse:
     """The service is up; ready says whether it can analyze (the API key is set)."""
-    return HealthResponse(status="UP", analyzer=settings.analyzer, model=analyzer.model_name, ready=analyzer.ready())
+    return HealthResponse(
+        status="UP",
+        analyzer=settings.analyzer,
+        model=analyzer.model_name,
+        ready=analyzer.ready(),
+        version=__version__,
+        uptime_seconds=uptime_seconds(),
+    )

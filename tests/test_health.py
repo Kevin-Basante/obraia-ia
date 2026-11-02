@@ -5,7 +5,13 @@ from tests.conftest import make_settings
 def test_health_is_public_and_reports_the_analyzer(client):
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "UP", "analyzer": "fake", "model": "fake", "ready": True}
+    body = response.json()
+    assert {key: body[key] for key in ("status", "analyzer", "model", "ready")} == {
+        "status": "UP",
+        "analyzer": "fake",
+        "model": "fake",
+        "ready": True,
+    }
 
 
 def test_docs_are_available(client):
