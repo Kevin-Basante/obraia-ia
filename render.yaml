@@ -19,3 +19,7 @@ services:
         sync: false
       - key: SERVICE_TOKEN
         sync: false
+      - key: MAX_PDF_PAGES
+        value: "10"
+      - key: MAX_CONCURRENT_ANALYSES
+        value: "2"
