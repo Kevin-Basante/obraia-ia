@@ -60,6 +60,8 @@ El archivo `.env` está en `.gitignore` y **nunca** se sube a GitHub. La clave d
 | `GEMINI_RETRIES` | Reintentos de cada modelo cuando Gemini responde que está saturado (por defecto 2) |
 | `SERVICE_TOKEN`  | Clave compartida con el backend; llega en el encabezado `X-Service-Token`    |
 | `MAX_FILE_MB`    | Tamaño máximo del plano en MB (por defecto 10)                               |
+| `MAX_PDF_PAGES`  | Páginas máximas de un PDF (por defecto 10)                                    |
+| `MAX_CONCURRENT_ANALYSES` | Análisis al mismo tiempo; los demás reciben `503 ANALYZER_BUSY` (por defecto 2) |
 | `PORT`           | Puerto del servidor (Render lo asigna solo)                                   |
 
 ## Comandos
