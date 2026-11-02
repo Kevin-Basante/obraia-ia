@@ -3,6 +3,7 @@
 import pytest
 
 from app.analyzers.base import AnalyzerBusyError, AnalyzerError
+from app.analyzers.fallback import FallbackAnalyzer
 from app.analyzers.retrying import RetryingAnalyzer
 from app.schemas import RawAnalysis, RawMeasurement
 
@@ -76,3 +77,19 @@ def test_retrying_shows_the_inner_model_and_readiness():
     analyzer = retrying(ScriptedAnalyzer(result(), model_name="m1", ready=False))
     assert analyzer.model_name == "m1"
     assert analyzer.ready() is False
+
+
+def test_main_answer_has_no_note():
+    backup = ScriptedAnalyzer(result("roof"), model_name="lite")
+    answer = FallbackAnalyzer(ScriptedAnalyzer(result()), backup).analyze(b"", "application/pdf", 1)
+    assert answer.measurements[0].element_type == "wall"
+    assert answer.warnings == []
+    assert backup.calls == 0
+
+
+def test_backup_reads_when_the_main_one_is_busy():
+    main = ScriptedAnalyzer(AnalyzerBusyError("busy"))
+    backup = ScriptedAnalyzer(result("roof"), model_name="lite")
+    answer = FallbackAnalyzer(main, backup).analyze(b"", "application/pdf", 1)
+    assert answer.measurements[0].element_type == "roof"
+    assert answer.warnings == ["The backup model lite read this blueprint because main-model was busy"]
