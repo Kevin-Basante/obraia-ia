@@ -151,7 +151,11 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
    - Solo se aceptan los 7 tipos del backend (también en plural, como `walls`).
    - Cada tipo guarda solo las medidas que necesita: volumen (largo, ancho y alto) para cimientos, columnas, vigas y losas; largo y alto para muros; largo y ancho para pisos y cubierta.
    - Las medidas se redondean a centímetros. Un elemento sin una medida obligatoria, con valores fuera de rango o en un piso que la obra no tiene se descarta y se cuenta en `discarded`.
-4. **Respuesta:** las medidas válidas, las advertencias del modelo (en español), el modelo usado y el tiempo que tardó.
+4. **Ajustes finales** (`app/postprocess/`): una cadena de pasos que se ejecutan en orden.
+   - `MergeDuplicates` une las filas con el mismo elemento, piso y medidas, y suma sus cantidades.
+   - `PlausibilityCheck` agrega una advertencia cuando una medida es rara para una casa (por ejemplo, un muro de más de 6 m de alto). La fila se conserva para que el usuario la revise.
+   - `SortByFloorAndElement` ordena por piso y luego en el orden de construcción: cimientos, columnas, vigas, losas, muros, pisos y cubierta.
+5. **Respuesta:** las medidas válidas, las advertencias, los totales por elemento, el modelo usado y el tiempo que tardó.
 
 ## Patrones de diseño
 
