@@ -5,8 +5,17 @@ Proyecto final de Patrones de Software: Kevin Basante y Arley Riascos.
 
 Este servicio no tiene base de datos ni usuarios: solo lo llama el backend (`obraia-backend`), que guarda las medidas y las compara con las que se ingresan a mano.
 
-```text
-Frontend  →  Backend (Spring Boot)  →  obraia-ia (FastAPI)  →  Gemini
+```mermaid
+flowchart LR
+    F[Frontend React] --> B[Backend Spring Boot]
+    B -- X-Service-Token --> R[Rutas FastAPI]
+    subgraph obraia-ia
+        R --> A[Analizador con decoradores]
+        A --> C[Limpieza]
+        C --> P[Pipeline de ajustes]
+        P --> S[Resumen]
+    end
+    A --> G[Gemini]
 ```
 
 ## Tecnologías
