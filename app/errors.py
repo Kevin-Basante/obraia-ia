@@ -1,8 +1,12 @@
 """Errors of the service and how they are answered: { "error": { "code", "message" } }."""
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+
+logger = logging.getLogger(__name__)
 
 
 class ServiceError(Exception):
@@ -26,3 +30,9 @@ def register_error_handlers(app: FastAPI) -> None:
     async def validation_error(_: Request, ex: RequestValidationError) -> JSONResponse:
         fields = ", ".join(".".join(str(part) for part in error["loc"][1:]) for error in ex.errors())
         return JSONResponse(status_code=400, content=error_body("VALIDATION_ERROR", f"Invalid fields: {fields}"))
+
+    @app.exception_handler(Exception)
+    async def unexpected_error(request: Request, ex: Exception) -> JSONResponse:
+        # The details stay in the log; the caller only learns that something failed.
+        logger.exception("Unexpected error in %s %s", request.method, request.url.path)
+        return JSONResponse(status_code=500, content=error_body("INTERNAL_ERROR", "Unexpected error in the AI service"))
