@@ -8,7 +8,7 @@ from app.analyzers.gemini import GeminiAnalyzer
 
 def reload(monkeypatch, **env):
     for key in ("ANALYZER", "GEMINI_API_KEY", "GEMINI_MODEL", "SERVICE_TOKEN", "MAX_FILE_MB",
-                "GEMINI_FALLBACK_MODEL", "GEMINI_RETRIES"):
+                "GEMINI_FALLBACK_MODEL", "GEMINI_RETRIES", "MAX_PDF_PAGES"):
         monkeypatch.delenv(key, raising=False)
     for key, value in env.items():
         monkeypatch.setenv(key, value)
@@ -26,6 +26,7 @@ def test_defaults(monkeypatch):
     assert settings.service_token == ""
     assert settings.gemini_fallback_model == config.DEFAULT_FALLBACK_MODEL
     assert settings.gemini_retries == 2
+    assert settings.max_pdf_pages == 10
 
 
 def test_reads_environment(monkeypatch):
@@ -79,3 +80,13 @@ def test_factory_passes_the_fallback_model_and_retries(monkeypatch):
     analyzer = factory.get_analyzer()
     assert analyzer.fallback_model == "backup-model"
     assert analyzer.retries == 1
+
+
+def test_reads_the_pdf_page_limit(monkeypatch):
+    reload(monkeypatch, MAX_PDF_PAGES="4")
+    assert config.get_settings().max_pdf_pages == 4
+
+
+def test_pdf_page_limit_is_at_least_one(monkeypatch):
+    reload(monkeypatch, MAX_PDF_PAGES="0")
+    assert config.get_settings().max_pdf_pages == 1
