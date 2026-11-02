@@ -278,5 +278,6 @@ Los dos trabajan juntos en el diseño y revisan el avance de los tres repositori
 ## Convenciones
 
 - Código, comentarios, rutas y claves JSON en inglés; documentación en español.
-- Commits con prefijo según el tipo de cambio: `feat:`, `fix:`, `docs:`, `chore:`, `test:`.
+- Commits con prefijo según el tipo de cambio: `feat:`, `fix:`, `docs:`, `chore:`, `test:`, `refactor:`, `style:`, `ci:`.
+- Antes de cada commit: `ruff check .`, `ruff format --check .` y `pytest`.
 - Las claves (`GEMINI_API_KEY`, `SERVICE_TOKEN`) solo van en `.env` o en Render, nunca en GitHub.
