@@ -157,6 +157,12 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
    - `SortByFloorAndElement` ordena por piso y luego en el orden de construcción: cimientos, columnas, vigas, losas, muros, pisos y cubierta.
 5. **Respuesta:** las medidas válidas, las advertencias, los totales por elemento, el modelo usado y el tiempo que tardó.
 
+## Logs y request ID
+
+- Cada petición recibe un código (`X-Request-ID`). Si el backend envía uno válido, se usa el mismo; si no, se crea uno nuevo. Siempre vuelve en la respuesta.
+- Cada línea de log muestra ese código: `INFO [3f2a…] app.access: POST /api/v1/blueprints/analyze -> 200 in 8421 ms`. Así se encuentran juntas todas las líneas de un análisis en los logs de Render.
+- `/health` no se escribe en el log de accesos porque Render lo llama seguido.
+
 ## Patrones de diseño
 
 | Patrón             | Dónde                                   | Para qué                                                         |
