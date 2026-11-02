@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from app import __version__
 from app.errors import register_error_handlers
+from app.middleware import RequestIdMiddleware
 from app.routers import analysis, health
 
 # Messages of the service (retries, failures) appear in the Render logs.
@@ -18,5 +19,6 @@ app = FastAPI(
     docs_url="/docs",
 )
 register_error_handlers(app)
+app.add_middleware(RequestIdMiddleware)
 app.include_router(health.router)
 app.include_router(analysis.router)
