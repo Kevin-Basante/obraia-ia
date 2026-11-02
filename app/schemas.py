@@ -49,6 +49,32 @@ class ElementSummary(BaseModel):
 class AnalysisResponse(BaseModel):
     """Answer of POST /api/v1/blueprints/analyze."""
 
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "measurements": [
+                        {
+                            "element_type": "wall",
+                            "floor_number": 1,
+                            "length_m": 36.0,
+                            "width_m": None,
+                            "height_m": 2.4,
+                            "quantity": 1,
+                            "notes": "Muros de fachada",
+                        }
+                    ],
+                    "warnings": ["Escala no visible"],
+                    "discarded": 0,
+                    "merged": 0,
+                    "summary": [{"element_type": "wall", "rows": 1, "pieces": 1, "total": 86.4, "unit": "m2"}],
+                    "model": "gemini-3.5-flash",
+                    "elapsed_ms": 8400,
+                }
+            ]
+        }
+    }
+
     measurements: list[ElementMeasurement]
     warnings: list[str]
     discarded: int = Field(description="Elements the model returned that were not valid")
