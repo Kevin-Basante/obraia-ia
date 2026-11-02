@@ -31,3 +31,8 @@ def test_health_reports_version_and_uptime(client):
     body = client.get("/health").json()
     assert body["version"] == __version__
     assert body["uptime_seconds"] >= 0
+
+
+def test_docs_describe_each_group_of_routes(client):
+    tags = [tag["name"] for tag in client.get("/openapi.json").json()["tags"]]
+    assert tags == ["Health", "Blueprints", "Elements"]
