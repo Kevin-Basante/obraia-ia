@@ -29,3 +29,12 @@ class Pipeline:
         for step in self.steps:
             measurements = step.apply(measurements, report)
         return measurements, report
+
+
+def default_pipeline() -> Pipeline:
+    """Steps used by the analysis route: merge, then check sizes, then sort."""
+    from app.postprocess.merge import MergeDuplicates
+    from app.postprocess.plausibility import PlausibilityCheck
+    from app.postprocess.sorting import SortByFloorAndElement
+
+    return Pipeline([MergeDuplicates(), PlausibilityCheck(), SortByFloorAndElement()])
