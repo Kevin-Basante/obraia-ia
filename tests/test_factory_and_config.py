@@ -117,3 +117,7 @@ def test_no_backup_without_a_fallback_model(monkeypatch):
 def test_no_backup_when_it_is_the_main_model(monkeypatch):
     reload(monkeypatch, GEMINI_API_KEY="key", GEMINI_MODEL="same", GEMINI_FALLBACK_MODEL="same")
     assert isinstance(factory.get_analyzer(), RetryingAnalyzer)
+
+
+def test_missing_dotenv_file_is_ignored(tmp_path):
+    config._load_dotenv(tmp_path / "missing.env")
