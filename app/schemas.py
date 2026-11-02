@@ -47,12 +47,14 @@ class AnalysisResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    status: str
-    analyzer: str
-    model: str
-    ready: bool
-    version: str
-    uptime_seconds: int
+    """Answer of GET /health."""
+
+    status: str = Field(description="Always UP when the service answers")
+    analyzer: str = Field(description="gemini or fake")
+    model: str = Field(description="Main model that reads the blueprints")
+    ready: bool = Field(description="False when the analyzer is missing its API key")
+    version: str = Field(description="Version of the service")
+    uptime_seconds: int = Field(description="Seconds since the service started")
 
 
 class ErrorBody(BaseModel):
