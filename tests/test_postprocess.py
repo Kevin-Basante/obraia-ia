@@ -3,6 +3,7 @@
 from app.elements import ElementType
 from app.postprocess.base import Pipeline, Report
 from app.postprocess.merge import MergeDuplicates
+from app.postprocess.plausibility import PlausibilityCheck
 from app.schemas import ElementMeasurement
 
 
@@ -75,3 +76,27 @@ def test_merge_does_not_change_the_original_rows():
     first = wall(quantity=2)
     merge([first, wall()])
     assert first.quantity == 2
+
+
+def check(items):
+    report = Report()
+    return PlausibilityCheck().apply(items, report), report
+
+
+def test_normal_sizes_have_no_warning():
+    result, report = check([wall()])
+    assert len(result) == 1
+    assert report.warnings == []
+
+
+def test_warns_about_a_very_tall_wall_and_keeps_it():
+    result, report = check([wall(height=9)])
+    assert len(result) == 1
+    assert report.warnings == ["Check the wall on floor 1: its height of 9 m is unusual (more than 6 m)"]
+
+
+def test_one_warning_per_strange_dimension():
+    slab = ElementMeasurement(element_type=ElementType.SLAB, floor_number=2, length_m=50, width_m=8, height_m=0.8)
+    _, report = check([slab])
+    assert len(report.warnings) == 2
+    assert all("slab on floor 2" in warning for warning in report.warnings)
