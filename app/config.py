@@ -31,6 +31,7 @@ class Settings:
     service_token: shared secret that the backend sends in X-Service-Token.
     gemini_fallback_model: model tried when the main one stays busy; empty turns it off.
     gemini_retries: extra tries of each model when Gemini answers that it is busy.
+    max_pdf_pages: longest PDF accepted; a house blueprint rarely needs more pages.
     """
 
     analyzer: str
@@ -40,6 +41,7 @@ class Settings:
     max_file_mb: int
     gemini_fallback_model: str = DEFAULT_FALLBACK_MODEL
     gemini_retries: int = 2
+    max_pdf_pages: int = 10
 
     @property
     def max_file_bytes(self) -> int:
@@ -57,4 +59,5 @@ def get_settings() -> Settings:
         max_file_mb=int(os.environ.get("MAX_FILE_MB", "10")),
         gemini_fallback_model=os.environ.get("GEMINI_FALLBACK_MODEL", DEFAULT_FALLBACK_MODEL).strip(),
         gemini_retries=max(0, int(os.environ.get("GEMINI_RETRIES", "2"))),
+        max_pdf_pages=max(1, int(os.environ.get("MAX_PDF_PAGES", "10"))),
     )
