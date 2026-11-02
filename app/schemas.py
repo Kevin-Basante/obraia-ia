@@ -36,6 +36,16 @@ class RawAnalysis(BaseModel):
     warnings: list[str] = []
 
 
+class ElementSummary(BaseModel):
+    """Totals of one element type, to show the size of the work at a glance."""
+
+    element_type: ElementType
+    rows: int = Field(description="Measurement rows of this element")
+    pieces: int = Field(description="Sum of the quantities")
+    total: float = Field(description="Total volume or surface")
+    unit: str = Field(description="m3 for concrete elements, m2 for walls, floors and roofs")
+
+
 class AnalysisResponse(BaseModel):
     """Answer of POST /api/v1/blueprints/analyze."""
 
