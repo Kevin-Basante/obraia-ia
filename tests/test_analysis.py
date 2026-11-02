@@ -157,3 +157,18 @@ def test_failures_are_logged(client, caplog):
         analyze(client)
     assert "plan.pdf" in caplog.text
     assert "Gemini answered 400: bad file" in caplog.text
+
+
+def pdf_with_pages(pages: int) -> bytes:
+    return b"%PDF-1.7\n" + b"<< /Type /Page >>\n" * pages
+
+
+def test_rejects_a_pdf_with_too_many_pages(client):
+    response = client.post("/api/v1/blueprints/analyze", files={"file": ("book.pdf", pdf_with_pages(11))}, headers=auth())
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "PDF_TOO_MANY_PAGES"
+
+
+def test_accepts_a_pdf_at_the_page_limit(client):
+    response = client.post("/api/v1/blueprints/analyze", files={"file": ("plan.pdf", pdf_with_pages(10))}, headers=auth())
+    assert response.status_code == 200
