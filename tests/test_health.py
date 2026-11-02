@@ -25,3 +25,9 @@ def test_settings_max_file_bytes():
 
 def test_docs_show_the_service_version(client):
     assert client.get("/openapi.json").json()["info"]["version"] == __version__
+
+
+def test_health_reports_version_and_uptime(client):
+    body = client.get("/health").json()
+    assert body["version"] == __version__
+    assert body["uptime_seconds"] >= 0
