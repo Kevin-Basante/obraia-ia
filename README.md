@@ -109,10 +109,17 @@ Respuesta (200):
   ],
   "warnings": ["La escala del plano no es visible"],
   "discarded": 0,
+  "merged": 0,
+  "summary": [
+    { "element_type": "wall", "rows": 1, "pieces": 1, "total": 86.4, "unit": "m2" }
+  ],
   "model": "gemini-3.5-flash",
   "elapsed_ms": 8421
 }
 ```
+
+- `merged`: filas repetidas que se unieron en una sola (se suman sus cantidades).
+- `summary`: totales por tipo de elemento. `total` es volumen (m3) para cimientos, columnas, vigas y losas, y superficie (m2) para muros, pisos y cubierta.
 
 Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`):
 
