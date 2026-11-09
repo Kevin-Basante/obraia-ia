@@ -3,6 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from app.analyzers.base import AnalyzerBusyError, AnalyzerError
+from app.reports.fallback import FallbackSummaryWriter
 from app.reports.gemini import GeminiSummaryWriter, parse_summary
 from app.reports.prompt import summary_prompt
 from app.reports.schemas import RawSummary, SummaryRequest
@@ -59,3 +60,36 @@ def test_the_public_prompt_forbids_money():
     assert "never mention budgets" in public
     assert "never mention budgets" not in full
     assert "approved budget" in full
+
+
+class Writer:
+    def __init__(self, name, error=None):
+        self.model_name = name
+        self.error = error
+        self.calls = 0
+
+    def ready(self):
+        return True
+
+    def write(self, request):
+        self.calls += 1
+        if self.error:
+            raise self.error
+        return RawSummary(summary=f"by {self.model_name}")
+
+
+def test_the_backup_writes_when_the_main_model_is_busy():
+    main, backup = Writer("main", AnalyzerBusyError("busy")), Writer("backup")
+
+    answer = FallbackSummaryWriter(main, backup).write(request())
+
+    assert answer.summary == "by backup"
+    assert FallbackSummaryWriter(main, backup).model_name == "main"
+
+
+def test_other_errors_do_not_go_to_the_backup():
+    main, backup = Writer("main", AnalyzerError("bad")), Writer("backup")
+
+    with pytest.raises(AnalyzerError):
+        FallbackSummaryWriter(main, backup).write(request())
+    assert backup.calls == 0
