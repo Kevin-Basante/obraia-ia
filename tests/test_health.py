@@ -35,7 +35,7 @@ def test_health_reports_version_and_uptime(client):
 
 def test_docs_describe_each_group_of_routes(client):
     tags = [tag["name"] for tag in client.get("/openapi.json").json()["tags"]]
-    assert tags == ["Health", "Blueprints", "Elements"]
+    assert tags == ["Health", "Blueprints", "Elements", "Reports"]
 
 
 def test_docs_show_an_example_answer(client):
