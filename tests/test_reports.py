@@ -1,3 +1,4 @@
+from app.analyzers.base import AnalyzerBusyError, AnalyzerError
 from app.main import app
 from app.reports.factory import get_summary_writer
 from app.reports.schemas import MAX_RECOMMENDATIONS, MAX_SUMMARY_CHARS, RawSummary
@@ -87,3 +88,43 @@ def test_an_empty_summary_is_a_failure(client):
 
     assert response.status_code == 502
     assert response.json()["error"]["code"] == "ANALYZER_FAILED"
+
+
+def test_rejects_a_body_without_figures(client):
+    response = client.post(PATH, json={"language": "es"}, headers=auth())
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_rejects_an_unknown_language(client):
+    response = client.post(PATH, json=body("fr"), headers=auth())
+
+    assert response.status_code == 400
+
+
+def test_without_api_key_answers_503(client):
+    use(StubWriter(ready=False))
+
+    response = client.post(PATH, json=body(), headers=auth())
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "ANALYZER_NOT_READY"
+
+
+def test_a_busy_model_answers_503(client):
+    use(StubWriter(error=AnalyzerBusyError("busy")))
+
+    response = client.post(PATH, json=body(), headers=auth())
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "ANALYZER_BUSY"
+
+
+def test_a_failed_model_answers_502(client):
+    use(StubWriter(error=AnalyzerError("bad json")))
+
+    response = client.post(PATH, json=body(), headers=auth())
+
+    assert response.status_code == 502
+    assert response.json()["error"]["message"] == "bad json"
