@@ -2,7 +2,7 @@
 
 ![Tests](https://github.com/Kevin-Basante/obraia-ia/actions/workflows/tests.yml/badge.svg)
 
-Servicio de inteligencia artificial de **ObraIA**. Recibe el plano de una obra (PDF o imagen), lo lee con un modelo de visión (Gemini) y devuelve las medidas de cada elemento: cimientos, columnas, vigas, losas, muros, pisos y cubierta.
+Servicio de inteligencia artificial de **ObraIA**. Recibe el plano de una obra (PDF o imagen), lo lee con un modelo de visión (Gemini) y devuelve las medidas de cada elemento: cimientos, columnas, vigas, losas, muros, pisos y cubierta. También escribe el resumen con recomendaciones de los informes PDF de cada obra.
 Proyecto final de Patrones de Software: Kevin Basante y Arley Riascos.
 
 Este servicio no tiene base de datos ni usuarios: solo lo llama el backend (`obraia-backend`), que guarda las medidas y las compara con las que se ingresan a mano.
@@ -16,7 +16,9 @@ flowchart LR
         A --> C[Limpieza]
         C --> P[Pipeline de ajustes]
         P --> S[Resumen]
+        R --> W[Escritor de resúmenes]
     end
+    W --> G
     A --> G[Gemini]
 ```
 
