@@ -14,8 +14,11 @@ Write in {language}:
 
 Rules:
 - Use only the figures given. Do not invent dates, amounts or names.
-- Money is in Colombian pesos. In both languages write amounts like $ 68.645.101 and
-  percents like 36,4%, the same format the rest of the report uses.
+- Money is in Colombian pesos. In both languages write amounts like $ 68.645.101,
+  negative amounts like -$ 2.224.589 and percents like 36,4%, the same format the
+  rest of the report uses. Copy each number as it is given: do not add decimals.
+- Write about the project in the third person, with correct spelling and accents
+  (in Spanish: días, categoría, ejecución).
 - Plain text only: no markdown, no lists inside the summary.
 {public_rule}
 Figures:
