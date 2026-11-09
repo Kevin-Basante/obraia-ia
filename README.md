@@ -157,6 +157,18 @@ Errores, con la misma forma que el backend (`{ "error": { "code", "message" } }`
 | 405         | `METHOD_NOT_ALLOWED`    | La ruta existe pero no con ese método           |
 | 500         | `INTERNAL_ERROR`        | Error inesperado; el detalle solo queda en los logs |
 
+## Resumen de los informes
+
+El backend arma el informe PDF de una obra y le pide a este servicio un resumen. Envía `POST /api/v1/reports/summary` con JSON:
+
+| Campo         | Qué es                                                                 |
+| ------------- | ---------------------------------------------------------------------- |
+| `language`    | `es` o `en`: el idioma del informe                                     |
+| `report_type` | `public` (sin dinero ni riesgo) o `full` (con presupuesto, gastos y riesgo) |
+| `figures`     | Las cifras que muestra el informe: obra, avance, fases, tareas y, en el completo, dinero y riesgo |
+
+Responde `{ "summary", "recommendations", "model" }`: un párrafo de hasta 1200 caracteres y como máximo 4 recomendaciones. Las instrucciones (`app/reports/prompt.py`) piden el formato colombiano de números y dinero en los dos idiomas, y prohíben hablar de dinero en el informe público. Si Gemini falla, el backend genera el PDF sin resumen.
+
 ## Cómo se lee un plano
 
 1. **Tipo de archivo:** se reconoce por sus primeros bytes, no por el nombre, así que un `.pdf` falso se rechaza. Un PDF con más de `MAX_PDF_PAGES` páginas también se rechaza.
