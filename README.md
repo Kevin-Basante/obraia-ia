@@ -102,7 +102,7 @@ La documentación interactiva (Swagger) queda en `http://localhost:8000/docs`.
 `GET /health` responde:
 
 ```json
-{ "status": "UP", "analyzer": "gemini", "model": "gemini-3.5-flash", "ready": true, "version": "1.1.0", "uptime_seconds": 532 }
+{ "status": "UP", "analyzer": "gemini", "model": "gemini-3.5-flash", "ready": true, "version": "1.1.1", "uptime_seconds": 532 }
 ```
 
 `POST /api/v1/blueprints/analyze` recibe un formulario `multipart/form-data`:
@@ -169,7 +169,7 @@ El backend arma el informe PDF de una obra y le pide a este servicio un resumen.
 | `report_type` | `public` (sin dinero ni riesgo) o `full` (con presupuesto, gastos y riesgo) |
 | `figures`     | Las cifras que muestra el informe: obra, avance, fases, tareas y, en el completo, dinero y riesgo |
 
-Responde `{ "summary", "recommendations", "model" }`: un párrafo de hasta 1200 caracteres y como máximo 4 recomendaciones. Las instrucciones (`app/reports/prompt.py`) piden el formato colombiano de números y dinero en los dos idiomas, y prohíben hablar de dinero en el informe público. Si Gemini falla, el backend genera el PDF sin resumen.
+Responde `{ "summary", "recommendations", "model" }`: un párrafo de hasta 1200 caracteres y como máximo 4 recomendaciones. Las instrucciones (`app/reports/prompt.py`) piden el formato colombiano de números y dinero en los dos idiomas (también los negativos, como -$ 2.224.589), copiar las cifras sin agregar decimales y escribir con tildes, y prohíben hablar de dinero en el informe público. Si Gemini falla, el backend genera el PDF sin resumen.
 
 ## Cómo se lee un plano
 
@@ -298,6 +298,7 @@ El plan gratuito de Render apaga el servicio tras 15 minutos sin uso; la primera
 | 0.1.0   | Lectura de planos con Gemini, limpieza de medidas, reintentos y modelo de respaldo          |
 | 1.0.0   | Decoradores, request ID y logs, límites de páginas y de análisis, unión de filas, advertencias de medidas raras, totales por elemento, ruta de elementos, CI |
 | 1.1.0   | Resumen con recomendaciones para los informes PDF, en español o inglés |
+| 1.1.1   | El resumen copia las cifras con el formato del PDF y escribe con tildes |
 
 ## Equipo y responsabilidades
 
