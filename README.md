@@ -254,6 +254,14 @@ app/
 │   ├── fallback.py      # Decorador: modelo de respaldo
 │   ├── fake.py          # Medidas de ejemplo, sin IA
 │   └── factory.py       # Elige el analizador y lo envuelve
+├── reports/
+│   ├── schemas.py       # Cifras del informe y respuesta del resumen
+│   ├── base.py          # Interfaz SummaryWriter (Strategy)
+│   ├── prompt.py        # Instrucciones del resumen
+│   ├── gemini.py        # Escribe el resumen con Gemini
+│   ├── fallback.py      # Decorador: modelo de respaldo
+│   ├── fake.py          # Resumen de ejemplo, sin IA
+│   └── factory.py       # Elige el escritor y lo envuelve
 ├── postprocess/
 │   ├── base.py          # Pipeline y Report
 │   ├── merge.py         # Une filas repetidas
@@ -262,7 +270,8 @@ app/
 └── routers/
     ├── health.py        # GET /health
     ├── analysis.py      # POST /api/v1/blueprints/analyze
-    └── elements.py      # GET /api/v1/elements
+    ├── elements.py      # GET /api/v1/elements
+    └── reports.py       # POST /api/v1/reports/summary
 tests/                   # Pruebas con pytest (Gemini simulado)
 .github/workflows/       # Pruebas automáticas en GitHub Actions
 ```
