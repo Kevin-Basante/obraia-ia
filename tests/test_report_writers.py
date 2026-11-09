@@ -3,6 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from app.analyzers.base import AnalyzerBusyError, AnalyzerError
+from app.reports.fake import FakeSummaryWriter
 from app.reports.fallback import FallbackSummaryWriter
 from app.reports.gemini import GeminiSummaryWriter, parse_summary
 from app.reports.prompt import summary_prompt
@@ -93,3 +94,11 @@ def test_other_errors_do_not_go_to_the_backup():
     with pytest.raises(AnalyzerError):
         FallbackSummaryWriter(main, backup).write(request())
     assert backup.calls == 0
+
+
+def test_the_fake_writer_uses_colombian_numbers():
+    answer = FakeSummaryWriter().write(request("en", "full", FULL_FIGURES))
+
+    assert "36,4% done" in answer.summary
+    assert "$ 270.300.000 of $ 68.645.101" in answer.summary
+    assert len(answer.recommendations) == 3
