@@ -102,7 +102,7 @@ La documentación interactiva (Swagger) queda en `http://localhost:8000/docs`.
 `GET /health` responde:
 
 ```json
-{ "status": "UP", "analyzer": "gemini", "model": "gemini-3.5-flash", "ready": true, "version": "1.0.0", "uptime_seconds": 532 }
+{ "status": "UP", "analyzer": "gemini", "model": "gemini-3.5-flash", "ready": true, "version": "1.1.0", "uptime_seconds": 532 }
 ```
 
 `POST /api/v1/blueprints/analyze` recibe un formulario `multipart/form-data`:
@@ -297,6 +297,7 @@ El plan gratuito de Render apaga el servicio tras 15 minutos sin uso; la primera
 | ------- | ------------------------------------------------------------------------------------------ |
 | 0.1.0   | Lectura de planos con Gemini, limpieza de medidas, reintentos y modelo de respaldo          |
 | 1.0.0   | Decoradores, request ID y logs, límites de páginas y de análisis, unión de filas, advertencias de medidas raras, totales por elemento, ruta de elementos, CI |
+| 1.1.0   | Resumen con recomendaciones para los informes PDF, en español o inglés |
 
 ## Equipo y responsabilidades
 
