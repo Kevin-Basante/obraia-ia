@@ -1,4 +1,4 @@
-"""Shared test setup: a client with a known token and a replaceable analyzer."""
+"""Shared test setup: a client with a known token and a replaceable analyzer and summary writer."""
 
 import pytest
 from fastapi.testclient import TestClient
@@ -8,6 +8,8 @@ from app.analyzers.fake import FakeAnalyzer
 from app.config import Settings, get_settings
 from app.limiter import AnalysisLimiter, get_limiter
 from app.main import app
+from app.reports.factory import get_summary_writer
+from app.reports.fake import FakeSummaryWriter
 
 TOKEN = "test-token"
 PDF_BYTES = b"%PDF-1.7\nfake blueprint"
@@ -41,6 +43,7 @@ def analyzer():
 def client(settings, analyzer):
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[get_analyzer] = lambda: analyzer
+    app.dependency_overrides[get_summary_writer] = lambda: FakeSummaryWriter()
     app.dependency_overrides[get_limiter] = lambda: AnalysisLimiter(2)
     yield TestClient(app)
     app.dependency_overrides.clear()
