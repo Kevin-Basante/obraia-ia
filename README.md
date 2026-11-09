@@ -210,7 +210,7 @@ En el backend, el **Adapter** (`AiServiceAdapter`) traduce las respuestas de est
 
 ## Pruebas
 
-- 151 pruebas con pytest; ninguna llama a Gemini (se usan analizadores simulados).
+- 172 pruebas con pytest; ninguna llama a Gemini (se usan analizadores simulados).
 - Cobertura cercana al 100 % de las líneas de `app/` (`pytest --cov`).
 - GitHub Actions (`.github/workflows/tests.yml`) revisa el estilo con ruff y corre las pruebas en cada push a `main`.
 
@@ -224,6 +224,7 @@ En el backend, el **Adapter** (`AiServiceAdapter`) traduce las respuestas de est
 | `test_quantities.py`, `test_summary.py` | Volúmenes, superficies y totales        |
 | `test_middleware.py`, `test_request_id.py`, `test_logging_setup.py` | Request ID y logs |
 | `test_errors.py`            | Forma de los errores 400, 404, 405 y 500            |
+| `test_reports.py`, `test_report_writers.py` | La ruta del resumen y sus escritores (Gemini, respaldo y ejemplo) |
 
 ## Estructura
 
