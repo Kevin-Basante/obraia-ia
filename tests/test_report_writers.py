@@ -3,11 +3,13 @@ from types import SimpleNamespace
 import pytest
 
 from app.analyzers.base import AnalyzerBusyError, AnalyzerError
+from app.reports.factory import build_gemini_writer
 from app.reports.fake import FakeSummaryWriter
 from app.reports.fallback import FallbackSummaryWriter
 from app.reports.gemini import GeminiSummaryWriter, parse_summary
 from app.reports.prompt import summary_prompt
 from app.reports.schemas import RawSummary, SummaryRequest
+from tests.conftest import make_settings
 from tests.report_figures import FULL_FIGURES, body
 from tests.test_gemini import FakeModels, api_error
 
@@ -96,9 +98,34 @@ def test_other_errors_do_not_go_to_the_backup():
     assert backup.calls == 0
 
 
+def test_the_factory_adds_the_backup_only_when_it_is_different():
+    with_backup = build_gemini_writer(make_settings(gemini_api_key="k", gemini_fallback_model="lite"))
+    alone = build_gemini_writer(make_settings(gemini_api_key="k", gemini_fallback_model="gemini-test"))
+
+    assert isinstance(with_backup, FallbackSummaryWriter)
+    assert isinstance(alone, GeminiSummaryWriter)
+    assert with_backup.ready()
+
+
 def test_the_fake_writer_uses_colombian_numbers():
     answer = FakeSummaryWriter().write(request("en", "full", FULL_FIGURES))
 
     assert "36,4% done" in answer.summary
     assert "$ 270.300.000 of $ 68.645.101" in answer.summary
     assert len(answer.recommendations) == 3
+
+
+def test_the_summary_writer_follows_the_analyzer_setting(monkeypatch):
+    from app.reports import factory
+    from tests.test_factory_and_config import reload
+
+    reload(monkeypatch, ANALYZER="fake")
+    factory.get_summary_writer.cache_clear()
+    assert isinstance(factory.get_summary_writer(), FakeSummaryWriter)
+
+    reload(monkeypatch, GEMINI_API_KEY="key")
+    factory.get_summary_writer.cache_clear()
+    writer = factory.get_summary_writer()
+    assert isinstance(writer, FallbackSummaryWriter)
+    assert writer.ready()
+    factory.get_summary_writer.cache_clear()
